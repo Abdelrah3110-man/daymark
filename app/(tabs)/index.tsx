@@ -19,10 +19,12 @@ import { getAvatarById } from '@/constants/avatars';
 export default function HomeScreen() {
   const router = useRouter();
   const settings = useAppStore((s) => s.settings);
+  const updateSettings = useAppStore((s) => s.updateSettings);
   const isHydrated = useAppStore((s) => s.isHydrated);
   const daysSinceLastActive = useAppStore((s) => s.daysSinceLastActive);
   const tasks = useTaskStore((s) => s.tasks);
 
+  const isDark = settings.themePreference === 'dark';
   const todayKey = getTodayKey();
   const [selectedDate, setSelectedDate] = useState<string>(todayKey);
   const [taskEditorVisible, setTaskEditorVisible] = useState(false);
@@ -47,6 +49,10 @@ export default function HomeScreen() {
     setTimeout(() => setRefreshing(false), 300);
   };
 
+  const toggleTheme = () => {
+    updateSettings({ themePreference: isDark ? 'light' : 'dark' });
+  };
+
   const currentAvatar = getAvatarById(settings.avatarId);
   const displayName = settings.displayName && settings.displayName.trim()
     ? settings.displayName.trim()
@@ -55,8 +61,8 @@ export default function HomeScreen() {
   const todayDisplay = `Today ${formatDayShort(todayKey)}`;
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      {/* Top Header matching reference layout */}
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: THEME.colors.background }]} edges={['top', 'left', 'right']}>
+      {/* Top Header matching reference layout with Dark Mode toggle */}
       <View style={styles.header}>
         <View style={styles.headerProfileRow}>
           <TouchableOpacity
@@ -69,19 +75,46 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           <View style={styles.headerTextWrap}>
-            <Text style={styles.greetingText}>Hello, {displayName}</Text>
-            <Text style={styles.dateText}>{todayDisplay}</Text>
+            <Text style={[styles.greetingText, { color: THEME.colors.text }]}>Hello, {displayName}</Text>
+            <Text style={[styles.dateText, { color: THEME.colors.textMuted }]}>{todayDisplay}</Text>
           </View>
         </View>
 
-        <TouchableOpacity
-          style={styles.searchBtn}
-          onPress={() => router.push('/notes')}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          accessibilityLabel="Search notes and tasks"
-        >
-          <Ionicons name="search-outline" size={20} color="#12131C" />
-        </TouchableOpacity>
+        <View style={styles.headerRightActions}>
+          {/* Quick Theme Toggle (Light / Dark) */}
+          <TouchableOpacity
+            style={[styles.headerBtn, { backgroundColor: THEME.colors.surface, borderColor: THEME.colors.border }]}
+            onPress={toggleTheme}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel="Toggle Theme Mode"
+          >
+            <Ionicons
+              name={isDark ? 'sunny' : 'moon'}
+              size={18}
+              color={isDark ? '#FBBF24' : THEME.colors.text}
+            />
+          </TouchableOpacity>
+
+          {/* Phone Home Widget Studio Shortcut */}
+          <TouchableOpacity
+            style={[styles.headerBtn, { backgroundColor: THEME.colors.surface, borderColor: THEME.colors.border }]}
+            onPress={() => router.push('/widgets' as any)}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel="Phone Widgets Studio"
+          >
+            <Ionicons name="grid-outline" size={18} color={THEME.colors.text} />
+          </TouchableOpacity>
+
+          {/* Search Button */}
+          <TouchableOpacity
+            style={[styles.headerBtn, { backgroundColor: THEME.colors.surface, borderColor: THEME.colors.border }]}
+            onPress={() => router.push('/notes')}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel="Search notes and tasks"
+          >
+            <Ionicons name="search-outline" size={18} color={THEME.colors.text} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView
@@ -177,22 +210,23 @@ const styles = StyleSheet.create({
   greetingText: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#12131C',
     letterSpacing: -0.3,
   },
   dateText: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#8E92A4',
     marginTop: 2,
   },
-  searchBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#FFFFFF',
+  headerRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     borderWidth: 1,
-    borderColor: '#ECEEF5',
     alignItems: 'center',
     justifyContent: 'center',
     ...THEME.shadows.subtle,

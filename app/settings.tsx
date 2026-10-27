@@ -225,6 +225,24 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Phone Home Screen Widgets */}
+        <View style={styles.card}>
+          <Text style={styles.sectionHeading}>PHONE HOME SCREEN WIDGETS</Text>
+          <Text style={styles.privacyNote}>
+            Customize your phone's home screen widgets to display today's tasks, your XP level, and quick shortcuts right on your phone home screen.
+          </Text>
+
+          <TouchableOpacity
+            style={styles.exportBtn}
+            onPress={() => router.push('/widgets' as any)}
+          >
+            <Ionicons name="grid-outline" size={18} color={THEME.colors.text} />
+            <Text style={styles.exportBtnText}>
+              Open Widget Studio (استوديو الويدجت)
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Planning Preferences */}
         <View style={styles.card}>
           <Text style={styles.sectionHeading}>WEEKLY PLANNING PREFERENCES</Text>

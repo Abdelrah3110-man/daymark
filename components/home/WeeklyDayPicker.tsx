@@ -76,11 +76,11 @@ const styles = StyleSheet.create({
   pillDefault: {
     backgroundColor: THEME.colors.surface,
     borderWidth: 1,
-    borderColor: '#ECEEF5',
+    borderColor: THEME.colors.border,
     ...THEME.shadows.subtle,
   },
   pillSelected: {
-    backgroundColor: '#12131C',
+    backgroundColor: THEME.colors.navBackground,
     ...THEME.shadows.card,
   },
   dayText: {
@@ -88,10 +88,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   dayTextDefault: {
-    color: '#8E92A4',
+    color: THEME.colors.textMuted,
   },
   dayTextSelected: {
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   dot: {
     width: 5,
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   dotDefault: {
-    backgroundColor: '#C5C9D6',
+    backgroundColor: THEME.colors.textLight,
   },
   dotActive: {
     backgroundColor: THEME.colors.lavenderDark,
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   numTextDefault: {
-    color: '#12131C',
+    color: THEME.colors.text,
   },
   numTextSelected: {
     color: '#FFFFFF',

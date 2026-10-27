@@ -69,6 +69,13 @@ export default function RootLayout() {
             presentation: 'card',
           }}
         />
+        <Stack.Screen
+          name="widgets"
+          options={{
+            headerShown: false,
+            presentation: 'card',
+          }}
+        />
       </Stack>
     </SafeAreaProvider>
   );

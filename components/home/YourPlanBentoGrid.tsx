@@ -45,10 +45,10 @@ export const YourPlanBentoGrid: React.FC<YourPlanBentoGridProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Your plan</Text>
+        <Text style={[styles.sectionTitle, { color: THEME.colors.text }]}>Your plan</Text>
         <TouchableOpacity onPress={onOpenDay} activeOpacity={0.7} style={styles.viewAllBtn}>
-          <Text style={styles.viewAllText}>View day</Text>
-          <Ionicons name="arrow-forward" size={14} color="#12131C" />
+          <Text style={[styles.viewAllText, { color: THEME.colors.text }]}>View day</Text>
+          <Ionicons name="arrow-forward" size={14} color={THEME.colors.text} />
         </TouchableOpacity>
       </View>
 
