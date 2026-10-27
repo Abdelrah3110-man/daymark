@@ -60,3 +60,4 @@ test('formatDurationMinutes formats correctly', () => {
   assert.equal(formatDurationMinutes(90), '1h 30m');
   assert.equal(formatDurationMinutes(150), '2h 30m');
 });
+

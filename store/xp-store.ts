@@ -58,3 +58,4 @@ export const useXPStore = create<XPState>((set, get) => ({
     await saveItem(STORAGE_KEYS.XP, []);
   },
 }));
+

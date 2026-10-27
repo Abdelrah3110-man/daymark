@@ -39,3 +39,4 @@ test('XP rewards match product rules', () => {
   assert.equal(XP_REWARDS.WEEKLY_REVIEW_COMPLETED, 15);
   assert.equal(XP_REWARDS.HABIT_COMPLETED, 5);
 });
+

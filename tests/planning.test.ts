@@ -95,3 +95,4 @@ test('detectPlanningConflicts finds conflicting fields between weekly and daily 
   assert.equal(conflicts[0].weeklyValue, '11:00');
   assert.equal(conflicts[0].dailyValue, '15:00');
 });
+

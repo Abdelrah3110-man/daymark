@@ -90,3 +90,4 @@ test('calculateHonestStats computes accurate completion rate and on-time rate', 
   assert.equal(stats.onTimeCompletionRate, 50);
   assert.equal(stats.hasEnoughData, true);
 });
+

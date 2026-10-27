@@ -16,8 +16,10 @@ import { Goal, Habit } from '@/types/app';
 export default function GoalsScreen() {
   const settings = useAppStore((s) => s.settings);
   const activeWeekStart = useAppStore((s) => s.activeWeekStart);
-  const goals = useGoalStore((s) => s.goals.filter((g) => g.status === 'active'));
-  const habits = useGoalStore((s) => s.habits.filter((h) => h.status === 'active'));
+  const allGoals = useGoalStore((s) => s.goals);
+  const allHabits = useGoalStore((s) => s.habits);
+  const goals = allGoals.filter((g) => g.status === 'active');
+  const habits = allHabits.filter((h) => h.status === 'active');
 
   const [activeTab, setActiveTab] = useState<'goals' | 'habits'>('goals');
   const [goalEditorVisible, setGoalEditorVisible] = useState(false);
@@ -212,3 +214,4 @@ const styles = StyleSheet.create({
     paddingBottom: 110,
   },
 });
+

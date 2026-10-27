@@ -194,3 +194,4 @@ export interface DayWorkloadSummary {
   priorityCount: number;
   conflictCount: number;
 }
+

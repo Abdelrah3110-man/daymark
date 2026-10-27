@@ -28,8 +28,10 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ visible, onClose, noteTo
   const createNote = useNotesStore((s) => s.createNote);
   const updateNote = useNotesStore((s) => s.updateNote);
   const deleteNote = useNotesStore((s) => s.deleteNote);
-  const tasks = useTaskStore((s) => s.tasks.filter((t) => t.status !== 'cancelled'));
-  const goals = useGoalStore((s) => s.goals.filter((g) => g.status === 'active'));
+  const allTasks = useTaskStore((s) => s.tasks);
+  const allGoals = useGoalStore((s) => s.goals);
+  const tasks = allTasks.filter((t) => t.status !== 'cancelled');
+  const goals = allGoals.filter((g) => g.status === 'active');
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -361,3 +363,4 @@ const styles = StyleSheet.create({
     color: THEME.colors.danger,
   },
 });
+

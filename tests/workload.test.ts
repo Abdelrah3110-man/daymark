@@ -94,3 +94,4 @@ test('calculateDayWorkload correctly flags overloaded day', () => {
   assert.equal(workload.priorityCount, 1);
   assert.equal(workload.taskCount, 2);
 });
+

@@ -279,3 +279,4 @@ export const useGoalStore = create<GoalState>((set, get) => ({
     await saveItem(STORAGE_KEYS.HABITS, { habits: [], habitOccurrences: [] });
   },
 }));
+

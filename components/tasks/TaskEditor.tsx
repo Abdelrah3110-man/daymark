@@ -40,7 +40,8 @@ export const TaskEditor: React.FC<TaskEditorProps> = ({
   const updateTask = useTaskStore((s) => s.updateTask);
   const deleteTask = useTaskStore((s) => s.deleteTask);
   const bumpRevision = usePlanningStore((s) => s.bumpWeeklyPlanRevision);
-  const goals = useGoalStore((s) => s.goals.filter((g) => g.status === 'active'));
+  const allGoals = useGoalStore((s) => s.goals);
+  const goals = allGoals.filter((g) => g.status === 'active');
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -555,3 +556,4 @@ const styles = StyleSheet.create({
     color: THEME.colors.danger,
   },
 });
+

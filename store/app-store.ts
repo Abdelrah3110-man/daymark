@@ -146,3 +146,4 @@ export const useAppStore = create<AppState>((set, get) => ({
     await saveItem(STORAGE_KEYS.SETTINGS, cleanSettings);
   },
 }));
+

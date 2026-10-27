@@ -97,3 +97,4 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     await saveItem(STORAGE_KEYS.NOTES, { notes: [] });
   },
 }));
+
