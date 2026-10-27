@@ -60,12 +60,12 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: THEME.colors.surface,
-    borderRadius: THEME.borderRadius.lg,
-    padding: THEME.spacing.md,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 16,
     marginBottom: THEME.spacing.sm,
     borderWidth: 1,
-    borderColor: THEME.colors.border,
+    borderColor: '#ECEEF5',
     ...THEME.shadows.subtle,
   },
   topRow: {

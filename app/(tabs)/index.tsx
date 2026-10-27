@@ -7,12 +7,12 @@ import { useRouter } from 'expo-router';
 import { useAppStore } from '@/store/app-store';
 import { useTaskStore } from '@/store/task-store';
 import { usePlanningStore } from '@/store/planning-store';
-import { getTodayKey, getWeekStartDate, getWeekDates, formatDayFull } from '@/utils/dates';
+import { getTodayKey, getWeekStartDate, getWeekDates, formatDayShort } from '@/utils/dates';
 import { calculateWeeklyWorkload } from '@/utils/workload';
 import { DailyChallengeCard } from '@/components/home/DailyChallengeCard';
-import { TodayOverviewCard } from '@/components/home/TodayOverviewCard';
+import { WeeklyDayPicker } from '@/components/home/WeeklyDayPicker';
+import { YourPlanBentoGrid } from '@/components/home/YourPlanBentoGrid';
 import { WeeklySummaryCard } from '@/components/home/WeeklySummaryCard';
-import { QuickActionsRow } from '@/components/home/QuickActionsRow';
 import { TaskEditor } from '@/components/tasks/TaskEditor';
 
 export default function HomeScreen() {
@@ -20,51 +20,66 @@ export default function HomeScreen() {
   const settings = useAppStore((s) => s.settings);
   const daysSinceLastActive = useAppStore((s) => s.daysSinceLastActive);
   const tasks = useTaskStore((s) => s.tasks);
-  const dailyPlans = usePlanningStore((s) => s.dailyPlans);
 
+  const todayKey = getTodayKey();
+  const [selectedDate, setSelectedDate] = useState<string>(todayKey);
   const [taskEditorVisible, setTaskEditorVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const todayKey = getTodayKey();
   const weekStart = getWeekStartDate(new Date(), settings.weekStartDay);
   const weekDates = getWeekDates(weekStart);
 
-  const todayTasks = tasks.filter((t) => t.scheduledDate === todayKey);
-  const todayPlan = dailyPlans.find((dp) => dp.date === todayKey);
+  const selectedDateTasks = tasks.filter((t) => t.scheduledDate === selectedDate);
   const weeklySummary = calculateWeeklyWorkload(weekDates, tasks, settings.dailyAvailabilityMinutes);
+
+  // Task counts map for the weekly day picker dots
+  const taskCountsByDate: Record<string, number> = {};
+  tasks.forEach((t) => {
+    if (t.scheduledDate && t.status !== 'cancelled') {
+      taskCountsByDate[t.scheduledDate] = (taskCountsByDate[t.scheduledDate] || 0) + 1;
+    }
+  });
 
   const onRefresh = () => {
     setRefreshing(true);
     setTimeout(() => setRefreshing(false), 300);
   };
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    let timeGreeting = 'Good morning';
-    if (hour >= 12 && hour < 17) timeGreeting = 'Good afternoon';
-    if (hour >= 17) timeGreeting = 'Good evening';
+  const displayName = settings.displayName && settings.displayName.trim()
+    ? settings.displayName.trim()
+    : 'Sandra';
 
-    if (settings.displayName && settings.displayName.trim()) {
-      return `${timeGreeting}, ${settings.displayName.trim()}`;
-    }
-    return timeGreeting;
-  };
+  const todayDisplay = `Today ${formatDayShort(todayKey)}`;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      {/* Top Header matching reference layout */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.greetingText}>{getGreeting()}</Text>
-          <Text style={styles.dateText}>{formatDayFull(todayKey)}</Text>
+        <View style={styles.headerProfileRow}>
+          <TouchableOpacity
+            style={styles.avatarButton}
+            onPress={() => router.push('/settings')}
+            activeOpacity={0.8}
+            accessibilityLabel="Profile settings"
+          >
+            <View style={styles.avatarInner}>
+              <Ionicons name="person" size={20} color="#12131C" />
+            </View>
+          </TouchableOpacity>
+
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.greetingText}>Hello, {displayName}</Text>
+            <Text style={styles.dateText}>{todayDisplay}</Text>
+          </View>
         </View>
 
         <TouchableOpacity
-          style={styles.settingsBtn}
-          onPress={() => router.push('/settings')}
+          style={styles.searchBtn}
+          onPress={() => router.push('/notes')}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          accessibilityLabel="Open settings"
+          accessibilityLabel="Search notes and tasks"
         >
-          <Ionicons name="settings-outline" size={20} color={THEME.colors.text} />
+          <Ionicons name="search-outline" size={20} color="#12131C" />
         </TouchableOpacity>
       </View>
 
@@ -76,36 +91,39 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={THEME.colors.text} />
         }
       >
-        {/* Return after inactivity flow */}
+        {/* Welcome back alert after 2+ inactive days */}
         {daysSinceLastActive >= 2 && (
           <View style={styles.welcomeBackCard}>
             <Ionicons name="sunny-outline" size={20} color={THEME.colors.lavenderDark} />
             <View style={styles.welcomeBackTextWrap}>
               <Text style={styles.welcomeBackTitle}>Welcome back</Text>
               <Text style={styles.welcomeBackSub}>
-                Every day is a fresh opportunity. Focus on today's single highest priority.
+                Every day is a fresh opportunity. Focus on today's highest priority.
               </Text>
             </View>
           </View>
         )}
 
-        {/* Daily Challenge Card (Lavender) */}
+        {/* 1. Daily Challenge Hero Banner (Lavender with 3D Composition) */}
         <DailyChallengeCard />
 
-        {/* Today's Overview (Peach) */}
-        <TodayOverviewCard
-          todayTasks={todayTasks}
-          dailyPlan={todayPlan}
-          availabilityMinutes={settings.dailyAvailabilityMinutes}
+        {/* 2. Horizontal Calendar Strip (Weekly Day Picker with Pill Caps) */}
+        <WeeklyDayPicker
+          dates={weekDates}
+          selectedDate={selectedDate}
+          onSelectDate={setSelectedDate}
+          taskCountsByDate={taskCountsByDate}
         />
 
-        {/* Quick Actions Grid (Asymmetric) */}
-        <QuickActionsRow
+        {/* 3. Your Plan Bento Grid (Tall Peach, Sky Blue & Pink action hub) */}
+        <YourPlanBentoGrid
+          selectedDate={selectedDate}
+          tasks={selectedDateTasks}
           onAddTask={() => setTaskEditorVisible(true)}
-          onOpenNotes={() => router.push('/notes')}
+          onOpenDay={() => router.push(`/daily/${selectedDate}` as any)}
         />
 
-        {/* Weekly Summary (Soft Pink) */}
+        {/* 4. Weekly Workload & Performance Summary */}
         <WeeklySummaryCard weekStartDate={weekStart} summary={weeklySummary} />
       </ScrollView>
 
@@ -114,7 +132,7 @@ export default function HomeScreen() {
         <TaskEditor
           visible={taskEditorVisible}
           onClose={() => setTaskEditorVisible(false)}
-          defaultDate={todayKey}
+          defaultDate={selectedDate}
         />
       )}
     </SafeAreaView>
@@ -124,35 +142,62 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: THEME.colors.background,
+    backgroundColor: '#F5F6FA',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: THEME.spacing.lg,
-    paddingTop: THEME.spacing.sm,
-    paddingBottom: THEME.spacing.sm,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 12,
   },
-  headerLeft: {
-    flex: 1,
+  headerProfileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
-  greetingText: {
-    ...THEME.typography.h2,
-    color: THEME.colors.text,
+  avatarButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFE3D1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    ...THEME.shadows.subtle,
   },
-  dateText: {
-    ...THEME.typography.caption,
-    color: THEME.colors.textMuted,
-    marginTop: 2,
-  },
-  settingsBtn: {
+  avatarInner: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: THEME.colors.surface,
+    backgroundColor: '#FFD4B8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTextWrap: {
+    justifyContent: 'center',
+  },
+  greetingText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#12131C',
+    letterSpacing: -0.3,
+  },
+  dateText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#8E92A4',
+    marginTop: 2,
+  },
+  searchBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: THEME.colors.border,
+    borderColor: '#ECEEF5',
     alignItems: 'center',
     justifyContent: 'center',
     ...THEME.shadows.subtle,
@@ -161,32 +206,32 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: THEME.spacing.lg,
-    paddingTop: THEME.spacing.sm,
-    paddingBottom: 100, // Space for floating bottom bar
+    paddingHorizontal: 20,
+    paddingTop: 6,
+    paddingBottom: 110, // Space for floating bottom bar
   },
   welcomeBackCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: THEME.colors.lavenderLight,
-    padding: THEME.spacing.md,
-    borderRadius: THEME.borderRadius.lg,
-    marginBottom: THEME.spacing.md,
-    gap: THEME.spacing.md,
+    backgroundColor: '#EFEAFF',
+    padding: 14,
+    borderRadius: 20,
+    marginBottom: 14,
+    gap: 12,
     borderWidth: 1,
-    borderColor: '#D0C9FF',
+    borderColor: '#D8CEFC',
   },
   welcomeBackTextWrap: {
     flex: 1,
   },
   welcomeBackTitle: {
-    ...THEME.typography.bodyLg,
+    fontSize: 15,
     fontWeight: '700',
-    color: THEME.colors.lavenderDark,
+    color: '#432C81',
   },
   welcomeBackSub: {
-    ...THEME.typography.micro,
-    color: THEME.colors.textSecondary,
+    fontSize: 12,
+    color: '#6B7082',
     marginTop: 2,
   },
 });

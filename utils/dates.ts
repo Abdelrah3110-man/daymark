@@ -101,6 +101,20 @@ export function formatWeekdayShort(dateKey: string): string {
 }
 
 /**
+ * Gets numeric day of month, e.g. 25
+ */
+export function getDayNumber(dateKey: string): number {
+  return parseDateKey(dateKey).getDate();
+}
+
+/**
+ * Gets short day abbreviation, e.g. "Wed"
+ */
+export function getDayNameShort(dateKey: string): string {
+  return formatWeekdayShort(dateKey);
+}
+
+/**
  * Formats a date key to a full date label, e.g. "Monday, October 27, 2026"
  */
 export function formatDayFull(dateKey: string): string {

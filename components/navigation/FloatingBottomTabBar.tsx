@@ -40,7 +40,7 @@ export const FloatingBottomTabBar: React.FC<CustomTabBarProps> = ({
       case 'index':
         return isFocused ? 'home' : 'home-outline';
       case 'planner':
-        return isFocused ? 'calendar' : 'calendar-outline';
+        return isFocused ? 'grid' : 'grid-outline';
       case 'goals':
         return isFocused ? 'flag' : 'flag-outline';
       case 'progress':
@@ -70,7 +70,7 @@ export const FloatingBottomTabBar: React.FC<CustomTabBarProps> = ({
   };
 
   return (
-    <View style={[styles.outerContainer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+    <View style={[styles.outerContainer, { paddingBottom: Math.max(insets.bottom, 14) }]}>
       <View style={styles.pillContainer}>
         {state.routes.map((route, index) => {
           const descriptor = descriptors ? descriptors[route.key] : undefined;
@@ -91,7 +91,6 @@ export const FloatingBottomTabBar: React.FC<CustomTabBarProps> = ({
                 });
                 defaultPrevented = !!event?.defaultPrevented;
               } catch {
-                // If emit fails gracefully proceed to navigation
                 defaultPrevented = false;
               }
             }
@@ -128,22 +127,16 @@ export const FloatingBottomTabBar: React.FC<CustomTabBarProps> = ({
               accessibilityLabel={options.tabBarAccessibilityLabel || label}
               onPress={onPress}
               onLongPress={onLongPress}
-              style={[styles.tabButton, isFocused && styles.tabButtonActive]}
-              activeOpacity={0.7}
+              style={styles.tabButton}
+              activeOpacity={0.8}
             >
-              <Ionicons
-                name={iconName}
-                size={20}
-                color={isFocused ? THEME.colors.navActive : THEME.colors.navInactive}
-              />
-              <Text
-                style={[
-                  styles.tabLabel,
-                  { color: isFocused ? THEME.colors.navActive : THEME.colors.navInactive },
-                ]}
-              >
-                {label}
-              </Text>
+              {isFocused ? (
+                <View style={styles.activeCircle}>
+                  <Ionicons name={iconName} size={22} color={THEME.colors.navActive} />
+                </View>
+              ) : (
+                <Ionicons name={iconName} size={22} color={THEME.colors.navInactive} />
+              )}
             </TouchableOpacity>
           );
         })}
@@ -164,30 +157,29 @@ const styles = StyleSheet.create({
   pillContainer: {
     flexDirection: 'row',
     backgroundColor: THEME.colors.navBackground,
-    borderRadius: THEME.borderRadius.pill,
-    paddingVertical: 6,
+    borderRadius: 40,
+    paddingVertical: 7,
     paddingHorizontal: 8,
     alignItems: 'center',
     justifyContent: 'space-around',
-    width: '92%',
-    maxWidth: 400,
-    borderWidth: 1,
-    borderColor: THEME.colors.navBorder,
+    width: '90%',
+    maxWidth: 390,
     ...THEME.shadows.floating,
   },
   tabButton: {
     flex: 1,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 6,
-    borderRadius: THEME.borderRadius.pill,
   },
-  tabButtonActive: {
-    backgroundColor: THEME.colors.navSurface,
-  },
-  tabLabel: {
-    ...THEME.typography.micro,
-    marginTop: 3,
+  activeCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: THEME.colors.navActiveCircle,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...THEME.shadows.subtle,
   },
 });
 

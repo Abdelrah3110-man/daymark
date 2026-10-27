@@ -3,19 +3,23 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-nativ
 import { THEME } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStore } from '@/store/app-store';
+import { useXPStore } from '@/store/xp-store';
 import { getTodayKey } from '@/utils/dates';
 
 export const DailyChallengeCard: React.FC = () => {
   const settings = useAppStore((s) => s.settings);
   const setDailyChallenge = useAppStore((s) => s.setDailyChallenge);
   const toggleCompleted = useAppStore((s) => s.toggleDailyChallengeCompleted);
+  const totalXP = useXPStore((s) => s.totalXP);
 
   const [isEditing, setIsEditing] = useState(false);
   const [inputText, setInputText] = useState(settings.dailyChallengeText || '');
 
   const todayKey = getTodayKey();
   const isCompleted = settings.dailyChallengeCompletedDate === todayKey;
-  const hasChallenge = Boolean(settings.dailyChallengeText && settings.dailyChallengeText.trim());
+  const challengeTitle = settings.dailyChallengeText && settings.dailyChallengeText.trim()
+    ? settings.dailyChallengeText
+    : 'Do your plan before 09:00 AM';
 
   const handleSave = () => {
     setDailyChallenge(inputText);
@@ -24,32 +28,13 @@ export const DailyChallengeCard: React.FC = () => {
 
   return (
     <View style={styles.card}>
-      <View style={styles.headerRow}>
-        <View style={styles.badge}>
-          <Ionicons name="sparkles" size={13} color={THEME.colors.lavenderDark} />
-          <Text style={styles.badgeText}>DAILY COMMITMENT</Text>
-        </View>
-
-        {!isEditing && (
-          <TouchableOpacity
-            style={styles.editBtn}
-            onPress={() => {
-              setInputText(settings.dailyChallengeText || '');
-              setIsEditing(true);
-            }}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Ionicons name="pencil-outline" size={16} color={THEME.colors.text} />
-          </TouchableOpacity>
-        )}
-      </View>
-
       {isEditing ? (
-        <View style={styles.editWrap}>
+        <View style={styles.editContainer}>
+          <Text style={styles.editHeader}>Set Daily Intention</Text>
           <TextInput
             style={styles.input}
-            placeholder="What is your single most important intention today?"
-            placeholderTextColor={THEME.colors.textMuted}
+            placeholder="e.g. Finish client proposal by 11:00 AM"
+            placeholderTextColor="rgba(18, 19, 28, 0.4)"
             value={inputText}
             onChangeText={setInputText}
             autoFocus
@@ -60,34 +45,69 @@ export const DailyChallengeCard: React.FC = () => {
               <Text style={styles.cancelBtnText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-              <Text style={styles.saveBtnText}>Set Commitment</Text>
+              <Text style={styles.saveBtnText}>Save</Text>
             </TouchableOpacity>
           </View>
         </View>
-      ) : hasChallenge ? (
-        <TouchableOpacity
-          style={styles.challengeRow}
-          onPress={toggleCompleted}
-          activeOpacity={0.8}
-        >
-          <View style={[styles.checkbox, isCompleted && styles.checkboxChecked]}>
-            {isCompleted && <Ionicons name="checkmark" size={16} color={THEME.colors.textInverse} />}
-          </View>
-          <Text style={[styles.challengeText, isCompleted && styles.challengeTextDone]}>
-            {settings.dailyChallengeText}
-          </Text>
-        </TouchableOpacity>
       ) : (
-        <TouchableOpacity
-          style={styles.emptyPrompt}
-          onPress={() => setIsEditing(true)}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.emptyTitle}>Set today's primary intention</Text>
-          <Text style={styles.emptySub}>
-            Choose one decisive commitment to focus on and conquer today.
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.contentRow}>
+          {/* Left Column: Challenge texts and badges */}
+          <View style={styles.leftColumn}>
+            <TouchableOpacity
+              onPress={() => {
+                setInputText(settings.dailyChallengeText || '');
+                setIsEditing(true);
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.mainTitle}>Daily{'\n'}challenge</Text>
+              <Text style={[styles.subText, isCompleted && styles.subTextCompleted]} numberOfLines={2}>
+                {challengeTitle}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Overlapping avatar pills and counter */}
+            <View style={styles.avatarRow}>
+              <TouchableOpacity
+                style={[styles.checkPill, isCompleted && styles.checkPillDone]}
+                onPress={toggleCompleted}
+                activeOpacity={0.8}
+              >
+                <Ionicons
+                  name={isCompleted ? 'checkmark-circle' : 'radio-button-off'}
+                  size={18}
+                  color={isCompleted ? '#10B981' : '#12131C'}
+                />
+                <Text style={styles.checkPillText}>
+                  {isCompleted ? 'Completed' : 'Mark Done'}
+                </Text>
+              </TouchableOpacity>
+
+              <View style={styles.streakBadge}>
+                <Text style={styles.streakText}>+{totalXP > 0 ? totalXP : 4} XP</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Right Column: 3D playful geometric composition */}
+          <View style={styles.artContainer}>
+            {/* Orange Torus / Ring */}
+            <View style={styles.torusOuter}>
+              <View style={styles.torusInner} />
+            </View>
+
+            {/* Dark Slate Cylinder */}
+            <View style={styles.cylinder} />
+
+            {/* Soft Gray Cube / Shape */}
+            <View style={styles.roundedCube} />
+
+            {/* Mini Yellow Torus Ring */}
+            <View style={styles.miniRing}>
+              <View style={styles.miniRingHole} />
+            </View>
+          </View>
+        </View>
       )}
     </View>
   );
@@ -95,122 +115,207 @@ export const DailyChallengeCard: React.FC = () => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: THEME.colors.lavender,
-    borderRadius: THEME.borderRadius.xl,
-    padding: THEME.spacing.lg,
+    backgroundColor: '#C8B6FF',
+    borderRadius: 30,
+    padding: 22,
     marginBottom: THEME.spacing.md,
-    borderWidth: 1,
-    borderColor: '#C3BAF7',
+    overflow: 'hidden',
+    position: 'relative',
     ...THEME.shadows.card,
   },
-  headerRow: {
+  contentRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: THEME.spacing.sm,
+    minHeight: 140,
   },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: THEME.borderRadius.pill,
-    gap: 4,
-  },
-  badgeText: {
-    ...THEME.typography.micro,
-    fontWeight: '800',
-    color: THEME.colors.lavenderDark,
-  },
-  editBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  challengeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-  },
-  checkbox: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: THEME.colors.text,
-    backgroundColor: THEME.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: THEME.spacing.md,
-  },
-  checkboxChecked: {
-    backgroundColor: THEME.colors.text,
-    borderColor: THEME.colors.text,
-  },
-  challengeText: {
-    ...THEME.typography.h3,
-    color: THEME.colors.text,
+  leftColumn: {
     flex: 1,
-    lineHeight: 24,
+    justifyContent: 'space-between',
+    paddingRight: 12,
   },
-  challengeTextDone: {
+  mainTitle: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#12131C',
+    lineHeight: 30,
+    letterSpacing: -0.5,
+  },
+  subText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: 'rgba(18, 19, 28, 0.75)',
+    marginTop: 6,
+    lineHeight: 18,
+  },
+  subTextCompleted: {
     textDecorationLine: 'line-through',
     opacity: 0.6,
   },
-  emptyPrompt: {
-    paddingVertical: 6,
+  avatarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    gap: 8,
   },
-  emptyTitle: {
-    ...THEME.typography.h3,
-    color: THEME.colors.text,
-    marginBottom: 2,
+  checkPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
+    gap: 5,
   },
-  emptySub: {
-    ...THEME.typography.bodySm,
-    color: THEME.colors.textSecondary,
+  checkPillDone: {
+    backgroundColor: '#FFFFFF',
   },
-  editWrap: {
-    marginTop: 4,
+  checkPillText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#12131C',
+  },
+  streakBadge: {
+    backgroundColor: '#352C63',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 14,
+  },
+  streakText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  artContainer: {
+    width: 110,
+    height: 120,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  torusOuter: {
+    position: 'absolute',
+    top: 0,
+    right: 12,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FF9900',
+    borderWidth: 12,
+    borderColor: '#FFAE33',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transform: [{ rotate: '-25deg' }, { scaleX: 1.1 }],
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  torusInner: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#C8B6FF',
+  },
+  cylinder: {
+    position: 'absolute',
+    bottom: 24,
+    left: 2,
+    width: 48,
+    height: 52,
+    borderRadius: 18,
+    backgroundColor: '#4A5B67',
+    borderTopColor: '#6B7E8C',
+    borderTopWidth: 4,
+    transform: [{ rotate: '15deg' }],
+    shadowColor: '#000',
+    shadowOffset: { width: 3, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  roundedCube: {
+    position: 'absolute',
+    bottom: 12,
+    right: 18,
+    width: 46,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: '#B5A599',
+    borderTopColor: '#D3C5BA',
+    borderTopWidth: 6,
+    transform: [{ rotate: '-12deg' }],
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  miniRing: {
+    position: 'absolute',
+    bottom: 0,
+    left: 26,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#F7E33B',
+    borderWidth: 7,
+    borderColor: '#FFE852',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transform: [{ rotate: '40deg' }],
+    elevation: 5,
+  },
+  miniRingHole: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#C8B6FF',
+  },
+  editContainer: {
+    paddingVertical: 4,
+  },
+  editHeader: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#12131C',
+    marginBottom: 8,
   },
   input: {
-    backgroundColor: THEME.colors.surface,
-    borderRadius: THEME.borderRadius.md,
-    padding: THEME.spacing.md,
-    ...THEME.typography.body,
-    color: THEME.colors.text,
-    minHeight: 64,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 12,
+    fontSize: 14,
+    color: '#12131C',
+    minHeight: 60,
   },
   editButtons: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: 8,
-    marginTop: THEME.spacing.sm,
+    marginTop: 10,
   },
   cancelBtn: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: THEME.borderRadius.pill,
+    borderRadius: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.6)',
   },
   cancelBtnText: {
-    ...THEME.typography.caption,
+    fontSize: 12,
     fontWeight: '600',
-    color: THEME.colors.text,
+    color: '#12131C',
   },
   saveBtn: {
     paddingHorizontal: 14,
     paddingVertical: 6,
-    borderRadius: THEME.borderRadius.pill,
-    backgroundColor: THEME.colors.text,
+    borderRadius: 16,
+    backgroundColor: '#12131C',
   },
   saveBtnText: {
-    ...THEME.typography.caption,
+    fontSize: 12,
     fontWeight: '700',
-    color: THEME.colors.textInverse,
+    color: '#FFFFFF',
   },
 });
-
