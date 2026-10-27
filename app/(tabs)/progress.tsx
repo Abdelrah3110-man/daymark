@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useTaskStore } from '@/store/task-store';
 import { useFocusStore } from '@/store/focus-store';
@@ -17,6 +17,7 @@ import { MedalsAndTitlesSection } from '@/components/progress/MedalsAndTitlesSec
 import { formatWeekRange } from '@/utils/dates';
 
 export default function ProgressScreen() {
+  const { colors, isDark } = useTheme();
   const settings = useAppStore((s) => s.settings);
   const activeWeekStart = useAppStore((s) => s.activeWeekStart);
   const tasks = useTaskStore((s) => s.tasks);
@@ -64,11 +65,11 @@ export default function ProgressScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Progress & Review</Text>
-          <Text style={styles.subtitle}>Honest metrics based exclusively on your activity</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Progress & Review</Text>
+          <Text style={[styles.subtitle, { color: colors.textMuted }]}>Honest metrics based exclusively on your activity</Text>
         </View>
       </View>
 
@@ -83,58 +84,58 @@ export default function ProgressScreen() {
         <MetricsGrid stats={stats} />
 
         {/* Weekly Performance Review Card */}
-        <View style={styles.reviewCard}>
+        <View style={[styles.reviewCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.reviewHeader}>
-            <View style={styles.reviewBadge}>
-              <Ionicons name="book-outline" size={13} color={THEME.colors.peachDark} />
-              <Text style={styles.reviewBadgeText}>WEEKLY PERFORMANCE REVIEW</Text>
+            <View style={[styles.reviewBadge, { backgroundColor: colors.peachLight }]}>
+              <Ionicons name="book-outline" size={13} color={colors.peachDark} />
+              <Text style={[styles.reviewBadgeText, { color: colors.peachDark }]}>WEEKLY PERFORMANCE REVIEW</Text>
             </View>
-            <Text style={styles.reviewWeekRange}>{formatWeekRange(activeWeekStart)}</Text>
+            <Text style={[styles.reviewWeekRange, { color: colors.textMuted }]}>{formatWeekRange(activeWeekStart)}</Text>
           </View>
 
           {existingReview ? (
             <View style={styles.reviewContent}>
               <View style={styles.reviewSuccessRow}>
-                <Ionicons name="checkmark-circle" size={18} color={THEME.colors.success} />
-                <Text style={styles.reviewSuccessText}>Completed & 15 XP Awarded</Text>
+                <Ionicons name="checkmark-circle" size={18} color={colors.success} />
+                <Text style={[styles.reviewSuccessText, { color: colors.success }]}>Completed & 15 XP Awarded</Text>
               </View>
 
-              <Text style={styles.reviewGoalLabel}>Next Week's Focal Goal:</Text>
-              <Text style={styles.reviewGoalVal}>"{existingReview.nextWeekGoal}"</Text>
+              <Text style={[styles.reviewGoalLabel, { color: colors.textMuted }]}>Next Week's Focal Goal:</Text>
+              <Text style={[styles.reviewGoalVal, { color: colors.text }]}>"{existingReview.nextWeekGoal}"</Text>
 
               {existingReview.reflectionNotes ? (
                 <>
-                  <Text style={styles.reviewGoalLabel}>Reflection:</Text>
-                  <Text style={styles.reviewReflectionVal}>{existingReview.reflectionNotes}</Text>
+                  <Text style={[styles.reviewGoalLabel, { color: colors.textMuted }]}>Reflection:</Text>
+                  <Text style={[styles.reviewReflectionVal, { color: colors.textSecondary }]}>{existingReview.reflectionNotes}</Text>
                 </>
               ) : null}
 
               <TouchableOpacity
-                style={styles.editReviewBtn}
+                style={[styles.editReviewBtn, { backgroundColor: colors.surfaceSecondary }]}
                 onPress={() => {
                   setNextWeekGoal(existingReview.nextWeekGoal);
                   setReflectionText(existingReview.reflectionNotes);
                   setReviewModalVisible(true);
                 }}
               >
-                <Text style={styles.editReviewBtnText}>Update Review</Text>
+                <Text style={[styles.editReviewBtnText, { color: colors.text }]}>Update Review</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <View style={styles.emptyReview}>
-              <Text style={styles.emptyReviewTitle}>Reflect and solidify your gains</Text>
-              <Text style={styles.emptyReviewSub}>
+              <Text style={[styles.emptyReviewTitle, { color: colors.text }]}>Reflect and solidify your gains</Text>
+              <Text style={[styles.emptyReviewSub, { color: colors.textSecondary }]}>
                 Review planned vs completed tasks, analyze focus time, and set one key improvement for next week.
               </Text>
               <TouchableOpacity
-                style={styles.startReviewBtn}
+                style={[styles.startReviewBtn, { backgroundColor: colors.text }]}
                 onPress={() => {
                   setNextWeekGoal('');
                   setReflectionText('');
                   setReviewModalVisible(true);
                 }}
               >
-                <Text style={styles.startReviewBtnText}>Start Weekly Review (+15 XP)</Text>
+                <Text style={[styles.startReviewBtnText, { color: colors.textInverse }]}>Start Weekly Review (+15 XP)</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -151,14 +152,17 @@ export default function ProgressScreen() {
         presentationStyle="pageSheet"
         onRequestClose={() => setReviewModalVisible(false)}
       >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
+        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+          <View style={[styles.modalHeader, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
             <TouchableOpacity onPress={() => setReviewModalVisible(false)}>
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={[styles.cancelText, { color: colors.textMuted }]}>Cancel</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>Weekly Review</Text>
-            <TouchableOpacity onPress={handleSaveReview} style={styles.saveBtn}>
-              <Text style={styles.saveText}>Complete</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Weekly Review</Text>
+            <TouchableOpacity
+              onPress={handleSaveReview}
+              style={[styles.saveBtn, { backgroundColor: colors.text }]}
+            >
+              <Text style={[styles.saveText, { color: colors.textInverse }]}>Save (+15 XP)</Text>
             </TouchableOpacity>
           </View>
 

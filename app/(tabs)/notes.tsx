@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useNotesStore } from '@/store/notes-store';
 import { NoteCard } from '@/components/notes/NoteCard';
@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { Note } from '@/types/app';
 
 export default function NotesScreen() {
+  const { colors, isDark } = useTheme();
   const notes = useNotesStore((s) => s.notes);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,39 +30,39 @@ export default function NotesScreen() {
   const otherNotes = filteredNotes.filter((n) => !n.isPinned);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Notes</Text>
-          <Text style={styles.subtitle}>Fast capture, reflections, and playbooks</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Notes</Text>
+          <Text style={[styles.subtitle, { color: colors.textMuted }]}>Fast capture, reflections, and playbooks</Text>
         </View>
 
         <TouchableOpacity
-          style={styles.addBtn}
+          style={[styles.addBtn, { backgroundColor: colors.text }]}
           onPress={() => {
             setNoteToEdit(null);
             setEditorVisible(true);
           }}
           accessibilityLabel="Create note"
         >
-          <Ionicons name="add" size={22} color={THEME.colors.textInverse} />
+          <Ionicons name="add" size={22} color={colors.textInverse} />
         </TouchableOpacity>
       </View>
 
       {/* Search Bar */}
-      <View style={styles.searchBar}>
-        <Ionicons name="search-outline" size={18} color={THEME.colors.textMuted} />
+      <View style={[styles.searchBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Ionicons name="search-outline" size={18} color={colors.textMuted} />
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { color: colors.text }]}
           placeholder="Search by title, body, or #tag..."
-          placeholderTextColor={THEME.colors.textLight}
+          placeholderTextColor={colors.textLight}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
         {searchQuery ? (
           <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Ionicons name="close-circle" size={16} color={THEME.colors.textMuted} />
+            <Ionicons name="close-circle" size={16} color={colors.textMuted} />
           </TouchableOpacity>
         ) : null}
       </View>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { ProductivityStats } from '@/utils/statistics';
 import { formatDurationMinutes } from '@/utils/dates';
@@ -10,30 +10,32 @@ interface MetricsGridProps {
 }
 
 export const MetricsGrid: React.FC<MetricsGridProps> = ({ stats }) => {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.grid}>
       {/* Completion Rate */}
-      <View style={[styles.tile, { backgroundColor: THEME.colors.lightBlue }]}>
+      <View style={[styles.tile, { backgroundColor: colors.lightBlue }]}>
         <View style={styles.topRow}>
-          <Text style={styles.label}>COMPLETION RATE</Text>
-          <Ionicons name="checkmark-circle-outline" size={16} color={THEME.colors.lightBlueDark} />
+          <Text style={[styles.label, { color: colors.lightBlueDark }]}>COMPLETION RATE</Text>
+          <Ionicons name="checkmark-circle-outline" size={16} color={colors.lightBlueDark} />
         </View>
-        <Text style={styles.value}>{stats.completionRate}%</Text>
-        <Text style={styles.subtext}>
+        <Text style={[styles.value, { color: colors.text }]}>{stats.completionRate}%</Text>
+        <Text style={[styles.subtext, { color: colors.lightBlueDark }]}>
           {stats.completedTasks} of {stats.totalTasks} planned tasks
         </Text>
       </View>
 
       {/* On-Time Rate */}
-      <View style={[styles.tile, { backgroundColor: THEME.colors.peach }]}>
+      <View style={[styles.tile, { backgroundColor: colors.peach }]}>
         <View style={styles.topRow}>
-          <Text style={styles.label}>ON-TIME RATE</Text>
-          <Ionicons name="time-outline" size={16} color={THEME.colors.peachDark} />
+          <Text style={[styles.label, { color: colors.peachDark }]}>ON-TIME RATE</Text>
+          <Ionicons name="time-outline" size={16} color={colors.peachDark} />
         </View>
-        <Text style={styles.value}>
+        <Text style={[styles.value, { color: colors.text }]}>
           {stats.tasksWithDeadlinesCount > 0 ? `${stats.onTimeCompletionRate}%` : '—'}
         </Text>
-        <Text style={styles.subtext}>
+        <Text style={[styles.subtext, { color: colors.peachDark }]}>
           {stats.tasksWithDeadlinesCount > 0
             ? `${stats.onTimeCompletedCount} of ${stats.tasksWithDeadlinesCount} met deadline`
             : 'No tasks with deadlines'}
@@ -41,23 +43,23 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({ stats }) => {
       </View>
 
       {/* Focus Time */}
-      <View style={[styles.tile, { backgroundColor: THEME.colors.lavender }]}>
+      <View style={[styles.tile, { backgroundColor: colors.lavender }]}>
         <View style={styles.topRow}>
-          <Text style={styles.label}>FOCUS SPRINT</Text>
-          <Ionicons name="timer-outline" size={16} color={THEME.colors.lavenderDark} />
+          <Text style={[styles.label, { color: colors.lavenderDark }]}>FOCUS SPRINT</Text>
+          <Ionicons name="timer-outline" size={16} color={colors.lavenderDark} />
         </View>
-        <Text style={styles.value}>{formatDurationMinutes(stats.totalFocusMinutes)}</Text>
-        <Text style={styles.subtext}>{stats.focusSessionsCount} completed sessions</Text>
+        <Text style={[styles.value, { color: colors.text }]}>{formatDurationMinutes(stats.totalFocusMinutes)}</Text>
+        <Text style={[styles.subtext, { color: colors.lavenderDark }]}>{stats.focusSessionsCount} completed sessions</Text>
       </View>
 
       {/* Consistency & Streaks */}
-      <View style={[styles.tile, { backgroundColor: THEME.colors.softPink }]}>
+      <View style={[styles.tile, { backgroundColor: colors.softPink }]}>
         <View style={styles.topRow}>
-          <Text style={styles.label}>QUALIFYING STREAK</Text>
-          <Ionicons name="flame-outline" size={16} color={THEME.colors.softPinkDark} />
+          <Text style={[styles.label, { color: colors.softPinkDark }]}>QUALIFYING STREAK</Text>
+          <Ionicons name="flame-outline" size={16} color={colors.softPinkDark} />
         </View>
-        <Text style={styles.value}>{stats.currentStreakDays} days</Text>
-        <Text style={styles.subtext}>Best record: {stats.longestStreakDays} days</Text>
+        <Text style={[styles.value, { color: colors.text }]}>{stats.currentStreakDays} days</Text>
+        <Text style={[styles.subtext, { color: colors.softPinkDark }]}>Best record: {stats.longestStreakDays} days</Text>
       </View>
     </View>
   );

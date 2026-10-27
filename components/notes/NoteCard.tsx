@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Note } from '@/types/app';
 import { Ionicons } from '@expo/vector-icons';
 import { useNotesStore } from '@/store/notes-store';
@@ -11,12 +11,17 @@ interface NoteCardProps {
 }
 
 export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress }) => {
+  const { colors, isDark } = useTheme();
   const togglePin = useNotesStore((s) => s.togglePinNote);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
       <View style={styles.topRow}>
-        <Text style={styles.title} numberOfLines={1}>
+        <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
           {note.title}
         </Text>
         <TouchableOpacity
@@ -27,20 +32,20 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress }) => {
           <Ionicons
             name={note.isPinned ? 'pin' : 'pin-outline'}
             size={16}
-            color={note.isPinned ? THEME.colors.peachDark : THEME.colors.textMuted}
+            color={note.isPinned ? colors.peachDark : colors.textMuted}
           />
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.content} numberOfLines={3}>
+      <Text style={[styles.content, { color: colors.textSecondary }]} numberOfLines={3}>
         {note.content}
       </Text>
 
       {note.tags.length > 0 && (
         <View style={styles.tagsRow}>
           {note.tags.map((tag) => (
-            <View key={tag} style={styles.tagPill}>
-              <Text style={styles.tagText}>#{tag}</Text>
+            <View key={tag} style={[styles.tagPill, { backgroundColor: colors.surfaceSecondary }]}>
+              <Text style={[styles.tagText, { color: colors.textSecondary }]}>#{tag}</Text>
             </View>
           ))}
         </View>
@@ -48,8 +53,8 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress }) => {
 
       {(note.linkedTaskId || note.linkedGoalId) && (
         <View style={styles.linkedRow}>
-          <Ionicons name="link-outline" size={12} color={THEME.colors.lavenderDark} />
-          <Text style={styles.linkedText}>
+          <Ionicons name="link-outline" size={12} color={colors.lavenderDark} />
+          <Text style={[styles.linkedText, { color: colors.lavenderDark }]}>
             Linked to {note.linkedTaskId ? 'task' : 'goal'}
           </Text>
         </View>

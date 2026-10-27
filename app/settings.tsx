@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStore } from '@/store/app-store';
 import { useXPStore } from '@/store/xp-store';
@@ -21,6 +21,7 @@ import { AVATARS, getAvatarById, isAvatarUnlocked } from '@/constants/avatars';
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const settings = useAppStore((s) => s.settings);
   const updateSettings = useAppStore((s) => s.updateSettings);
   const resetAllData = useAppStore((s) => s.resetAllApplicationData);
@@ -91,31 +92,31 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="chevron-back" size={24} color={THEME.colors.text} />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Settings</Text>
         <View style={{ width: 36 }} />
       </View>
 
       {saveFeedback ? (
-        <View style={styles.feedbackBanner}>
-          <Ionicons name="checkmark-circle" size={16} color={THEME.colors.success} />
-          <Text style={styles.feedbackText}>{saveFeedback}</Text>
+        <View style={[styles.feedbackBanner, { backgroundColor: colors.successLight }]}>
+          <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+          <Text style={[styles.feedbackText, { color: colors.success }]}>{saveFeedback}</Text>
         </View>
       ) : null}
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         {/* Profile Card */}
-        <View style={styles.card}>
-          <Text style={styles.sectionHeading}>PROFILE & IDENTITY</Text>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionHeading, { color: colors.textMuted }]}>PROFILE & IDENTITY</Text>
 
           {/* Current Avatar Preview */}
           <View style={styles.avatarRow}>
@@ -123,13 +124,13 @@ export default function SettingsScreen() {
               <Text style={styles.avatarEmojiLarge}>{currentAvatar.emoji}</Text>
             </View>
             <View style={styles.avatarTextCol}>
-              <Text style={styles.avatarTitle}>{currentAvatar.name}</Text>
-              <Text style={styles.avatarSubtitle}>{currentAvatar.title}</Text>
+              <Text style={[styles.avatarTitle, { color: colors.text }]}>{currentAvatar.name}</Text>
+              <Text style={[styles.avatarSubtitle, { color: colors.textSecondary }]}>{currentAvatar.title}</Text>
             </View>
           </View>
 
           {/* Avatars Selector */}
-          <Text style={styles.label}>Choose Avatar Persona</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Choose Avatar Persona</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.avatarScroll}>
             {AVATARS.map((a) => {
               const unlocked = isAvatarUnlocked(a.id, totalXP);
@@ -140,7 +141,7 @@ export default function SettingsScreen() {
                   style={[
                     styles.avatarMiniCard,
                     { backgroundColor: a.bgColor },
-                    isSelected && styles.avatarMiniCardSelected,
+                    isSelected && { borderColor: isDark ? '#FFFFFF' : '#12131C' },
                     !unlocked && styles.avatarMiniCardLocked,
                   ]}
                   onPress={() => handleSelectAvatar(a.id)}
@@ -154,8 +155,8 @@ export default function SettingsScreen() {
                       <Text style={styles.lockTextMini}>{a.requiredXP} XP</Text>
                     </View>
                   ) : isSelected ? (
-                    <View style={styles.checkBadgeMini}>
-                      <Ionicons name="checkmark" size={10} color="#FFFFFF" />
+                    <View style={[styles.checkBadgeMini, { backgroundColor: isDark ? '#FFFFFF' : '#12131C' }]}>
+                      <Ionicons name="checkmark" size={10} color={isDark ? '#12131C' : '#FFFFFF'} />
                     </View>
                   ) : null}
                 </TouchableOpacity>
@@ -163,178 +164,225 @@ export default function SettingsScreen() {
             })}
           </ScrollView>
 
-          <Text style={styles.label}>Display Name</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Display Name</Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.surfaceSecondary,
+                borderColor: colors.borderSubtle,
+                color: colors.text,
+              },
+            ]}
             placeholder="e.g. Sandra"
-            placeholderTextColor={THEME.colors.textLight}
+            placeholderTextColor={colors.textLight}
             value={displayName}
             onChangeText={setDisplayName}
             onBlur={handleSaveProfile}
           />
 
-          <Text style={[styles.label, { marginTop: 12 }]}>Date of Birth (YYYY-MM-DD)</Text>
+          <Text style={[styles.label, { color: colors.textSecondary, marginTop: 12 }]}>Date of Birth (YYYY-MM-DD)</Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.surfaceSecondary,
+                borderColor: colors.borderSubtle,
+                color: colors.text,
+              },
+            ]}
             placeholder="e.g. 1998-05-25"
-            placeholderTextColor={THEME.colors.textLight}
+            placeholderTextColor={colors.textLight}
             value={birthDate}
             onChangeText={setBirthDate}
             onBlur={handleSaveProfile}
           />
 
           <TouchableOpacity
-            style={styles.reopenOnboardingBtn}
+            style={[
+              styles.reopenOnboardingBtn,
+              {
+                backgroundColor: colors.lavenderLight,
+                borderColor: colors.lavender,
+              },
+            ]}
             onPress={() => router.push('/onboarding')}
             activeOpacity={0.8}
           >
-            <Ionicons name="sparkles" size={16} color="#432C81" />
-            <Text style={styles.reopenOnboardingText}>
-              فتح شاشة التسجيل واختيار الأفاتار (Onboarding Setup)
+            <Ionicons name="sparkles" size={16} color={colors.lavenderDark} />
+            <Text style={[styles.reopenOnboardingText, { color: colors.lavenderDark }]}>
+              Edit Profile & Avatars (Setup Flow)
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Appearance & Dark Mode */}
-        <View style={styles.card}>
-          <Text style={styles.sectionHeading}>APPEARANCE (DARK MODE)</Text>
-          <Text style={styles.label}>Theme Preference</Text>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionHeading, { color: colors.textMuted }]}>APPEARANCE (DARK MODE)</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Theme Preference</Text>
           <View style={styles.pillRow}>
             {[
               { label: '☀️ Light', value: 'light' as const },
               { label: '🌙 Dark', value: 'dark' as const },
-            ].map((item) => (
-              <TouchableOpacity
-                key={item.value}
-                style={[
-                  styles.pill,
-                  settings.themePreference === item.value && styles.pillActive,
-                ]}
-                onPress={() => handleThemeChange(item.value)}
-              >
-                <Text
+            ].map((item) => {
+              const isActive = settings.themePreference === item.value;
+              return (
+                <TouchableOpacity
+                  key={item.value}
                   style={[
-                    styles.pillText,
-                    settings.themePreference === item.value && styles.pillTextActive,
+                    styles.pill,
+                    {
+                      backgroundColor: isActive ? (isDark ? '#FFFFFF' : '#12131C') : colors.surfaceSecondary,
+                      borderColor: isActive ? (isDark ? '#FFFFFF' : '#12131C') : 'transparent',
+                    },
                   ]}
+                  onPress={() => handleThemeChange(item.value)}
                 >
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.pillText,
+                      {
+                        color: isActive ? (isDark ? '#12131C' : '#FFFFFF') : colors.textSecondary,
+                        fontWeight: isActive ? '700' : '600',
+                      },
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
         {/* Phone Home Screen Widgets */}
-        <View style={styles.card}>
-          <Text style={styles.sectionHeading}>PHONE HOME SCREEN WIDGETS</Text>
-          <Text style={styles.privacyNote}>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionHeading, { color: colors.textMuted }]}>PHONE HOME SCREEN WIDGETS</Text>
+          <Text style={[styles.privacyNote, { color: colors.textSecondary }]}>
             Customize your phone's home screen widgets to display today's tasks, your XP level, and quick shortcuts right on your phone home screen.
           </Text>
 
           <TouchableOpacity
-            style={styles.exportBtn}
+            style={[styles.exportBtn, { backgroundColor: colors.surfaceSecondary }]}
             onPress={() => router.push('/widgets' as any)}
           >
-            <Ionicons name="grid-outline" size={18} color={THEME.colors.text} />
-            <Text style={styles.exportBtnText}>
-              Open Widget Studio (استوديو الويدجت)
+            <Ionicons name="grid-outline" size={18} color={colors.text} />
+            <Text style={[styles.exportBtnText, { color: colors.text }]}>
+              Open Widget Studio
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Planning Preferences */}
-        <View style={styles.card}>
-          <Text style={styles.sectionHeading}>WEEKLY PLANNING PREFERENCES</Text>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionHeading, { color: colors.textMuted }]}>WEEKLY PLANNING PREFERENCES</Text>
 
-          <Text style={styles.label}>Week Starts On</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Week Starts On</Text>
           <View style={styles.pillRow}>
             {[
               { label: 'Sunday', value: 0 as const },
               { label: 'Monday', value: 1 as const },
               { label: 'Saturday', value: 6 as const },
-            ].map((item) => (
-              <TouchableOpacity
-                key={item.value}
-                style={[
-                  styles.pill,
-                  settings.weekStartDay === item.value && styles.pillActive,
-                ]}
-                onPress={() => handleWeekStartChange(item.value)}
-              >
-                <Text
+            ].map((item) => {
+              const isActive = settings.weekStartDay === item.value;
+              return (
+                <TouchableOpacity
+                  key={item.value}
                   style={[
-                    styles.pillText,
-                    settings.weekStartDay === item.value && styles.pillTextActive,
+                    styles.pill,
+                    {
+                      backgroundColor: isActive ? (isDark ? '#FFFFFF' : '#12131C') : colors.surfaceSecondary,
+                      borderColor: isActive ? (isDark ? '#FFFFFF' : '#12131C') : 'transparent',
+                    },
                   ]}
+                  onPress={() => handleWeekStartChange(item.value)}
                 >
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.pillText,
+                      {
+                        color: isActive ? (isDark ? '#12131C' : '#FFFFFF') : colors.textSecondary,
+                        fontWeight: isActive ? '700' : '600',
+                      },
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
 
-          <Text style={styles.label}>Daily Workload Availability Limit</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Daily Workload Availability Limit</Text>
           <View style={styles.pillRow}>
             {[
               { label: '6 Hours', value: 360 },
               { label: '8 Hours (Std)', value: 480 },
               { label: '10 Hours', value: 600 },
               { label: '12 Hours', value: 720 },
-            ].map((item) => (
-              <TouchableOpacity
-                key={item.value}
-                style={[
-                  styles.pill,
-                  settings.dailyAvailabilityMinutes === item.value && styles.pillActive,
-                ]}
-                onPress={() => handleAvailabilityChange(item.value)}
-              >
-                <Text
+            ].map((item) => {
+              const isActive = settings.dailyAvailabilityMinutes === item.value;
+              return (
+                <TouchableOpacity
+                  key={item.value}
                   style={[
-                    styles.pillText,
-                    settings.dailyAvailabilityMinutes === item.value && styles.pillTextActive,
+                    styles.pill,
+                    {
+                      backgroundColor: isActive ? (isDark ? '#FFFFFF' : '#12131C') : colors.surfaceSecondary,
+                      borderColor: isActive ? (isDark ? '#FFFFFF' : '#12131C') : 'transparent',
+                    },
                   ]}
+                  onPress={() => handleAvailabilityChange(item.value)}
                 >
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.pillText,
+                      {
+                        color: isActive ? (isDark ? '#12131C' : '#FFFFFF') : colors.textSecondary,
+                        fontWeight: isActive ? '700' : '600',
+                      },
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
         {/* Data & Privacy */}
-        <View style={styles.card}>
-          <Text style={styles.sectionHeading}>OFFLINE DATA & PRIVACY</Text>
-          <Text style={styles.privacyNote}>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionHeading, { color: colors.textMuted }]}>OFFLINE DATA & PRIVACY</Text>
+          <Text style={[styles.privacyNote, { color: colors.textSecondary }]}>
             Daymark operates strictly offline. All data is saved on your device in local storage. No servers, accounts, or trackers are utilized.
           </Text>
 
           <TouchableOpacity
-            style={styles.exportBtn}
+            style={[styles.exportBtn, { backgroundColor: colors.surfaceSecondary }]}
             onPress={handleExport}
             disabled={isExporting}
           >
-            <Ionicons name="download-outline" size={18} color={THEME.colors.text} />
-            <Text style={styles.exportBtnText}>
+            <Ionicons name="download-outline" size={18} color={colors.text} />
+            <Text style={[styles.exportBtnText, { color: colors.text }]}>
               {isExporting ? 'Generating JSON...' : 'Export Local Data (JSON)'}
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Danger Zone */}
-        <View style={[styles.card, styles.dangerCard]}>
-          <Text style={[styles.sectionHeading, { color: THEME.colors.danger }]}>DANGER ZONE</Text>
-          <Text style={styles.dangerNote}>
+        <View style={[styles.card, styles.dangerCard, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.sectionHeading, { color: colors.danger }]}>DANGER ZONE</Text>
+          <Text style={[styles.dangerNote, { color: colors.textSecondary }]}>
             Permanently clear all tasks, notes, goals, habits, focus logs, and earned XP. This cannot be undone.
           </Text>
 
           <TouchableOpacity
-            style={styles.clearBtn}
+            style={[styles.clearBtn, { backgroundColor: colors.danger }]}
             onPress={() => setShowClearConfirm(true)}
           >
-            <Ionicons name="trash-outline" size={18} color={THEME.colors.textInverse} />
-            <Text style={styles.clearBtnText}>Clear All Application Data</Text>
+            <Ionicons name="trash-outline" size={18} color={colors.textInverse} />
+            <Text style={[styles.clearBtnText, { color: colors.textInverse }]}>Clear All Application Data</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -357,7 +405,6 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: THEME.colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -366,8 +413,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: THEME.spacing.lg,
     paddingVertical: THEME.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: THEME.colors.border,
-    backgroundColor: THEME.colors.surface,
   },
   backBtn: {
     width: 36,
@@ -378,19 +423,16 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...THEME.typography.h3,
-    color: THEME.colors.text,
   },
   feedbackBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: THEME.colors.successLight,
     paddingHorizontal: THEME.spacing.lg,
     paddingVertical: 10,
     gap: 8,
   },
   feedbackText: {
     ...THEME.typography.caption,
-    color: THEME.colors.success,
     fontWeight: '700',
   },
   scroll: {
@@ -401,17 +443,14 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   card: {
-    backgroundColor: THEME.colors.surface,
     borderRadius: 24,
     padding: THEME.spacing.lg,
     marginBottom: THEME.spacing.md,
     borderWidth: 1,
-    borderColor: THEME.colors.border,
     ...THEME.shadows.subtle,
   },
   sectionHeading: {
     ...THEME.typography.micro,
-    color: THEME.colors.textMuted,
     fontWeight: '800',
     marginBottom: THEME.spacing.md,
     letterSpacing: 0.5,
@@ -441,11 +480,9 @@ const styles = StyleSheet.create({
   avatarTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: THEME.colors.text,
   },
   avatarSubtitle: {
     fontSize: 12,
-    color: THEME.colors.textSecondary,
     marginTop: 2,
   },
   avatarScroll: {
@@ -463,10 +500,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
     position: 'relative',
-  },
-  avatarMiniCardSelected: {
-    borderColor: '#12131C',
-    transform: [{ scale: 1.05 }],
   },
   avatarMiniCardLocked: {
     opacity: 0.55,
@@ -502,43 +535,35 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#12131C',
     alignItems: 'center',
     justifyContent: 'center',
   },
   label: {
     ...THEME.typography.caption,
-    color: THEME.colors.textSecondary,
     fontWeight: '700',
     marginBottom: 6,
   },
   input: {
-    backgroundColor: THEME.colors.surfaceSecondary,
     borderRadius: THEME.borderRadius.md,
     paddingHorizontal: THEME.spacing.md,
     paddingVertical: 12,
     ...THEME.typography.body,
-    color: THEME.colors.text,
     borderWidth: 1,
-    borderColor: THEME.colors.borderSubtle,
   },
   reopenOnboardingBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EFEAFF',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 18,
     marginTop: 14,
     gap: 8,
     borderWidth: 1,
-    borderColor: '#D8CEFC',
   },
   reopenOnboardingText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#432C81',
   },
   pillRow: {
     flexDirection: 'row',
@@ -550,26 +575,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: THEME.spacing.md,
     paddingVertical: 8,
     borderRadius: THEME.borderRadius.pill,
-    backgroundColor: THEME.colors.surfaceSecondary,
     borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  pillActive: {
-    backgroundColor: THEME.colors.text,
-    borderColor: THEME.colors.text,
   },
   pillText: {
     ...THEME.typography.caption,
-    color: THEME.colors.textSecondary,
-    fontWeight: '600',
-  },
-  pillTextActive: {
-    color: THEME.colors.textInverse,
-    fontWeight: '700',
   },
   privacyNote: {
     ...THEME.typography.bodySm,
-    color: THEME.colors.textSecondary,
     lineHeight: 20,
     marginBottom: THEME.spacing.md,
   },
@@ -577,7 +589,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: THEME.colors.surfaceSecondary,
     paddingVertical: 12,
     borderRadius: THEME.borderRadius.pill,
     gap: 8,
@@ -585,14 +596,12 @@ const styles = StyleSheet.create({
   exportBtnText: {
     ...THEME.typography.bodySm,
     fontWeight: '700',
-    color: THEME.colors.text,
   },
   dangerCard: {
-    borderColor: THEME.colors.dangerLight,
+    borderColor: '#FEE2E2',
   },
   dangerNote: {
     ...THEME.typography.bodySm,
-    color: THEME.colors.textSecondary,
     lineHeight: 20,
     marginBottom: THEME.spacing.md,
   },
@@ -600,7 +609,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: THEME.colors.danger,
     paddingVertical: 12,
     borderRadius: THEME.borderRadius.pill,
     gap: 8,
@@ -608,6 +616,5 @@ const styles = StyleSheet.create({
   clearBtnText: {
     ...THEME.typography.bodySm,
     fontWeight: '700',
-    color: THEME.colors.textInverse,
   },
 });

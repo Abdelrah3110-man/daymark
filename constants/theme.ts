@@ -172,3 +172,21 @@ export function setAppThemeColors(isDark: boolean) {
 
 export type ThemeColors = typeof THEME.colors;
 
+import { useAppStore } from '@/store/app-store';
+
+export function useTheme() {
+  const themePreference = useAppStore((s) => s.settings.themePreference);
+  const isDark = themePreference === 'dark';
+  const colors = isDark ? DARK_COLORS : LIGHT_COLORS;
+
+  return {
+    colors,
+    isDark,
+    themePreference,
+    spacing: THEME.spacing,
+    borderRadius: THEME.borderRadius,
+    typography: THEME.typography,
+    shadows: THEME.shadows,
+  };
+}
+

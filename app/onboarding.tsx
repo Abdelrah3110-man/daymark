@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { AVATARS, getAvatarById, isAvatarUnlocked } from '@/constants/avatars';
 import { useAppStore } from '@/store/app-store';
@@ -20,6 +20,7 @@ import { useXPStore } from '@/store/xp-store';
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
   const totalXP = useXPStore((s) => s.totalXP);
 
@@ -35,7 +36,7 @@ export default function OnboardingScreen() {
 
   const handleNextToAvatars = () => {
     if (!name.trim()) {
-      setErrorMessage('من فضلك اكتب اسمك للمتابعة (Please enter your name)');
+      setErrorMessage('Please enter your name to continue');
       return;
     }
     setErrorMessage('');
@@ -47,8 +48,8 @@ export default function OnboardingScreen() {
     if (!isUnlocked) {
       const target = getAvatarById(avatarId);
       Alert.alert(
-        'أفاتار مقفل بنقاط XP',
-        `هذا الأفاتار يتطلب ${target.requiredXP} نقطة XP لفتحه.\nستفتحه تلقائياً عند إنجاز المهام وجلسات التركيز!`
+        'Avatar Locked by XP',
+        `This avatar requires ${target.requiredXP} XP to unlock.\nComplete tasks and focus sessions to unlock it automatically!`
       );
       return;
     }
@@ -75,33 +76,62 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         {/* Top Header */}
         <View style={styles.header}>
-          <View style={styles.logoBadge}>
+          <View style={[styles.logoBadge, { backgroundColor: colors.lavender }]}>
             <Ionicons name="sparkles" size={24} color="#12131C" />
           </View>
-          <Text style={styles.welcomeTitle}>مرحباً بك في DAYMARK</Text>
-          <Text style={styles.welcomeSub}>
+          <Text style={[styles.welcomeTitle, { color: colors.text }]}>Welcome to DAYMARK</Text>
+          <Text style={[styles.welcomeSub, { color: colors.textSecondary }]}>
             Plan your week. Prepare each day. Execute with intention.
           </Text>
 
           {/* Stepper Indicator */}
           <View style={styles.stepperRow}>
-            <View style={[styles.stepDot, currentStep >= 1 && styles.stepDotActive]}>
-              <Text style={[styles.stepDotNumber, currentStep >= 1 && styles.stepDotNumberActive]}>1</Text>
+            <View
+              style={[
+                styles.stepDot,
+                { backgroundColor: currentStep >= 1 ? (isDark ? '#FFFFFF' : '#12131C') : colors.border },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.stepDotNumber,
+                  { color: currentStep >= 1 ? (isDark ? '#12131C' : '#FFFFFF') : colors.textMuted },
+                ]}
+              >
+                1
+              </Text>
             </View>
-            <View style={[styles.stepLine, currentStep >= 2 && styles.stepLineActive]} />
-            <View style={[styles.stepDot, currentStep >= 2 && styles.stepDotActive]}>
-              <Text style={[styles.stepDotNumber, currentStep >= 2 && styles.stepDotNumberActive]}>2</Text>
+            <View
+              style={[
+                styles.stepLine,
+                { backgroundColor: currentStep >= 2 ? (isDark ? '#FFFFFF' : '#12131C') : colors.border },
+              ]}
+            />
+            <View
+              style={[
+                styles.stepDot,
+                { backgroundColor: currentStep >= 2 ? (isDark ? '#FFFFFF' : '#12131C') : colors.border },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.stepDotNumber,
+                  { color: currentStep >= 2 ? (isDark ? '#12131C' : '#FFFFFF') : colors.textMuted },
+                ]}
+              >
+                2
+              </Text>
             </View>
           </View>
-          <Text style={styles.stepLabel}>
-            {currentStep === 1 ? 'الخطوة 1: البيانات الشخصية' : 'الخطوة 2: اختيار الأفاتار (والأفاتارات بالـ XP)'}
+          <Text style={[styles.stepLabel, { color: colors.textSecondary }]}>
+            {currentStep === 1 ? 'Step 1: Personal Profile' : 'Step 2: Choose Your Avatar'}
           </Text>
         </View>
 
@@ -112,14 +142,23 @@ export default function OnboardingScreen() {
         >
           {currentStep === 1 ? (
             /* STEP 1: Name and Birthday */
-            <View style={styles.card}>
-              <Text style={styles.sectionTitle}>ما هو اسمك؟</Text>
-              <Text style={styles.sectionSubtitle}>سنستخدم اسمك لتخصيص خطتك وتحيتك يومياً.</Text>
+            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>What is your name?</Text>
+              <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
+                We will personalize your planning dashboard and daily greeting.
+              </Text>
 
               <TextInput
-                style={styles.nameInput}
-                placeholder="اكتب اسمك هنا (مثال: أحمد أو سارة)"
-                placeholderTextColor={THEME.colors.textMuted}
+                style={[
+                  styles.nameInput,
+                  {
+                    backgroundColor: colors.surfaceSecondary,
+                    borderColor: colors.border,
+                    color: colors.text,
+                  },
+                ]}
+                placeholder="Enter your name (e.g. Alex or Sandra)"
+                placeholderTextColor={colors.textMuted}
                 value={name}
                 onChangeText={(val) => {
                   setName(val);
@@ -129,20 +168,27 @@ export default function OnboardingScreen() {
                 maxLength={32}
               />
 
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-              <Text style={styles.sectionTitle}>تاريخ ميلادك (Date of Birth)</Text>
-              <Text style={styles.sectionSubtitle}>
-                لحساب عمرك والاحتفال بمحطاتك ومواليدك الإنتاجية (اختياري).
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Date of Birth (Optional)</Text>
+              <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
+                Used to celebrate your milestones and calculate age benchmarks.
               </Text>
 
               <View style={styles.birthRow}>
                 <View style={styles.birthCol}>
-                  <Text style={styles.birthLabel}>اليوم (Day)</Text>
+                  <Text style={[styles.birthLabel, { color: colors.textSecondary }]}>Day (DD)</Text>
                   <TextInput
-                    style={styles.birthInput}
+                    style={[
+                      styles.birthInput,
+                      {
+                        backgroundColor: colors.surfaceSecondary,
+                        borderColor: colors.border,
+                        color: colors.text,
+                      },
+                    ]}
                     placeholder="DD"
-                    placeholderTextColor={THEME.colors.textMuted}
+                    placeholderTextColor={colors.textMuted}
                     value={birthDay}
                     onChangeText={setBirthDay}
                     keyboardType="number-pad"
@@ -151,11 +197,18 @@ export default function OnboardingScreen() {
                 </View>
 
                 <View style={styles.birthCol}>
-                  <Text style={styles.birthLabel}>الشهر (Month)</Text>
+                  <Text style={[styles.birthLabel, { color: colors.textSecondary }]}>Month (MM)</Text>
                   <TextInput
-                    style={styles.birthInput}
+                    style={[
+                      styles.birthInput,
+                      {
+                        backgroundColor: colors.surfaceSecondary,
+                        borderColor: colors.border,
+                        color: colors.text,
+                      },
+                    ]}
                     placeholder="MM"
-                    placeholderTextColor={THEME.colors.textMuted}
+                    placeholderTextColor={colors.textMuted}
                     value={birthMonth}
                     onChangeText={setBirthMonth}
                     keyboardType="number-pad"
@@ -164,11 +217,18 @@ export default function OnboardingScreen() {
                 </View>
 
                 <View style={[styles.birthCol, { flex: 1.4 }]}>
-                  <Text style={styles.birthLabel}>السنة (Year)</Text>
+                  <Text style={[styles.birthLabel, { color: colors.textSecondary }]}>Year (YYYY)</Text>
                   <TextInput
-                    style={styles.birthInput}
+                    style={[
+                      styles.birthInput,
+                      {
+                        backgroundColor: colors.surfaceSecondary,
+                        borderColor: colors.border,
+                        color: colors.text,
+                      },
+                    ]}
                     placeholder="YYYY"
-                    placeholderTextColor={THEME.colors.textMuted}
+                    placeholderTextColor={colors.textMuted}
                     value={birthYear}
                     onChangeText={setBirthYear}
                     keyboardType="number-pad"
@@ -178,9 +238,9 @@ export default function OnboardingScreen() {
               </View>
 
               {errorMessage ? (
-                <View style={styles.errorBox}>
-                  <Ionicons name="alert-circle" size={16} color="#DC2626" />
-                  <Text style={styles.errorText}>{errorMessage}</Text>
+                <View style={[styles.errorBox, { backgroundColor: colors.dangerLight }]}>
+                  <Ionicons name="alert-circle" size={16} color={colors.danger} />
+                  <Text style={[styles.errorText, { color: colors.danger }]}>{errorMessage}</Text>
                 </View>
               ) : null}
             </View>
@@ -190,14 +250,14 @@ export default function OnboardingScreen() {
               {/* Selected Avatar Live Preview */}
               <View style={[styles.heroAvatarCard, { backgroundColor: currentAvatar.bgColor }]}>
                 <Text style={styles.heroEmoji}>{currentAvatar.emoji}</Text>
-                <Text style={styles.heroName}>{currentAvatar.nameAr} • {currentAvatar.name}</Text>
+                <Text style={styles.heroName}>{currentAvatar.name}</Text>
                 <Text style={styles.heroTitle}>{currentAvatar.title}</Text>
                 <Text style={styles.heroDesc}>{currentAvatar.description}</Text>
               </View>
 
-              <Text style={styles.subHeading}>الأفاتارات المتاحة والأفاتارات المقفلة بالـ XP</Text>
-              <Text style={styles.subHeadingHint}>
-                الأفاتارات التي عليها قفل 🔒 تفتح تلقائياً كلما جمعت نقاط XP من إنجاز المهام.
+              <Text style={[styles.subHeading, { color: colors.text }]}>Available & XP-Locked Avatars</Text>
+              <Text style={[styles.subHeadingHint, { color: colors.textSecondary }]}>
+                Avatars marked with 🔒 unlock automatically as you earn XP from completing tasks.
               </Text>
 
               {/* All Avatars Grid */}
@@ -220,17 +280,17 @@ export default function OnboardingScreen() {
                     >
                       <Text style={styles.tileEmoji}>{avatar.emoji}</Text>
                       <Text style={styles.tileName} numberOfLines={1}>
-                        {avatar.nameAr}
+                        {avatar.name}
                       </Text>
 
                       {isSelected ? (
                         <View style={styles.selectedPill}>
                           <Ionicons name="checkmark" size={12} color="#FFFFFF" />
-                          <Text style={styles.selectedPillText}>المختار</Text>
+                          <Text style={styles.selectedPillText}>Selected</Text>
                         </View>
                       ) : isUnlocked ? (
                         <View style={styles.unlockedPill}>
-                          <Text style={styles.unlockedPillText}>متاح</Text>
+                          <Text style={styles.unlockedPillText}>Unlocked</Text>
                         </View>
                       ) : (
                         <View style={styles.xpLockPill}>
@@ -247,25 +307,25 @@ export default function OnboardingScreen() {
         </ScrollView>
 
         {/* Footer Navigation */}
-        <View style={styles.footer}>
+        <View style={[styles.footer, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
           {currentStep === 2 && (
             <TouchableOpacity
-              style={styles.backButton}
+              style={[styles.backButton, { backgroundColor: colors.surfaceSecondary, borderColor: colors.border }]}
               onPress={() => setCurrentStep(1)}
               activeOpacity={0.8}
             >
-              <Ionicons name="chevron-back" size={20} color="#12131C" />
-              <Text style={styles.backButtonText}>رجوع</Text>
+              <Ionicons name="chevron-back" size={20} color={colors.text} />
+              <Text style={[styles.backButtonText, { color: colors.text }]}>Back</Text>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity
-            style={[styles.primaryButton, currentStep === 1 && { flex: 1 }]}
+            style={[styles.primaryButton, currentStep === 1 && { flex: 1 }, { backgroundColor: colors.text }]}
             onPress={currentStep === 1 ? handleNextToAvatars : handleFinishOnboarding}
             activeOpacity={0.85}
           >
-            <Text style={styles.primaryButtonText}>
-              {currentStep === 1 ? 'التالي: اختيار الأفاتار ←' : 'ابدأ استخدام DAYMARK ✨'}
+            <Text style={[styles.primaryButtonText, { color: colors.textInverse }]}>
+              {currentStep === 1 ? 'Next: Choose Avatar →' : 'Get Started ✨'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -277,7 +337,6 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F5F6FA',
   },
   keyboardContainer: {
     flex: 1,
@@ -292,7 +351,6 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#C8B6FF',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
@@ -301,12 +359,10 @@ const styles = StyleSheet.create({
   welcomeTitle: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#12131C',
     letterSpacing: -0.4,
   },
   welcomeSub: {
     fontSize: 13,
-    color: '#6B7082',
     textAlign: 'center',
     marginTop: 4,
   },
@@ -320,34 +376,21 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: '#E5E7EB',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  stepDotActive: {
-    backgroundColor: '#12131C',
   },
   stepDotNumber: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#6B7280',
-  },
-  stepDotNumberActive: {
-    color: '#FFFFFF',
   },
   stepLine: {
     width: 40,
     height: 3,
-    backgroundColor: '#E5E7EB',
     borderRadius: 2,
-  },
-  stepLineActive: {
-    backgroundColor: '#12131C',
   },
   stepLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#4B5563',
     marginTop: 8,
   },
   scroll: {
@@ -359,41 +402,33 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   card: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 26,
     padding: 22,
     borderWidth: 1,
-    borderColor: '#ECEEF5',
     ...THEME.shadows.card,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#12131C',
-    textAlign: 'right',
+    textAlign: 'left',
   },
   sectionSubtitle: {
     fontSize: 13,
-    color: '#6B7082',
     marginTop: 3,
     marginBottom: 14,
-    textAlign: 'right',
+    textAlign: 'left',
   },
   nameInput: {
-    backgroundColor: '#F7F8FC',
     borderWidth: 1.5,
-    borderColor: '#E8EAF2',
     borderRadius: 18,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
     fontWeight: '700',
-    color: '#12131C',
-    textAlign: 'right',
+    textAlign: 'left',
   },
   divider: {
     height: 1,
-    backgroundColor: '#ECEEF5',
     marginVertical: 20,
   },
   birthRow: {
@@ -406,25 +441,21 @@ const styles = StyleSheet.create({
   birthLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#6B7082',
     marginBottom: 6,
-    textAlign: 'center',
+    textAlign: 'left',
   },
   birthInput: {
-    backgroundColor: '#F7F8FC',
     borderWidth: 1.5,
-    borderColor: '#E8EAF2',
     borderRadius: 16,
     paddingVertical: 12,
+    paddingHorizontal: 10,
     fontSize: 16,
     fontWeight: '700',
-    color: '#12131C',
     textAlign: 'center',
   },
   errorBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEE2E2',
     padding: 12,
     borderRadius: 14,
     marginTop: 16,
@@ -433,9 +464,8 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#DC2626',
     flex: 1,
-    textAlign: 'right',
+    textAlign: 'left',
   },
   stepTwoContainer: {
     gap: 14,
@@ -471,126 +501,127 @@ const styles = StyleSheet.create({
   subHeading: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#12131C',
     marginTop: 6,
-    textAlign: 'right',
+    textAlign: 'left',
   },
   subHeadingHint: {
     fontSize: 12,
-    color: '#6B7082',
-    textAlign: 'right',
     marginTop: 2,
+    textAlign: 'left',
   },
   avatarsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    marginTop: 8,
+    gap: 12,
+    marginTop: 6,
   },
   avatarTile: {
-    flex: 1,
-    minWidth: '47%',
-    borderRadius: 22,
-    padding: 14,
+    width: '31%',
+    aspectRatio: 0.9,
+    borderRadius: 20,
     alignItems: 'center',
-    borderWidth: 2.5,
-    borderColor: 'transparent',
+    justifyContent: 'center',
+    padding: 8,
     position: 'relative',
     ...THEME.shadows.subtle,
   },
   avatarTileSelected: {
+    borderWidth: 3,
     borderColor: '#12131C',
     transform: [{ scale: 1.03 }],
   },
   avatarTileLocked: {
-    opacity: 0.6,
+    opacity: 0.65,
   },
   tileEmoji: {
-    fontSize: 34,
+    fontSize: 32,
     marginBottom: 4,
   },
   tileName: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: '#12131C',
-    marginBottom: 8,
   },
   selectedPill: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    backgroundColor: '#12131C',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#12131C',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
+    gap: 2,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
   },
   selectedPillText: {
-    fontSize: 10,
-    fontWeight: '800',
     color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '800',
   },
   unlockedPill: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
     backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
   },
   unlockedPillText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#12131C',
+    color: '#10B981',
+    fontSize: 9,
+    fontWeight: '800',
   },
   xpLockPill: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    backgroundColor: '#EDE9FE',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EDE9FE',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 3,
+    gap: 2,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 10,
   },
   xpLockText: {
-    fontSize: 10,
-    fontWeight: '800',
     color: '#7C3AED',
+    fontSize: 9,
+    fontWeight: '800',
   },
   footer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    paddingVertical: 14,
-    backgroundColor: '#FFFFFF',
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
     borderTopWidth: 1,
-    borderTopColor: '#ECEEF5',
-    gap: 10,
-    alignItems: 'center',
+    gap: 12,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 16,
     paddingVertical: 14,
-    borderRadius: 22,
-    backgroundColor: '#F5F6FA',
+    borderRadius: 20,
+    borderWidth: 1,
     gap: 4,
   },
   backButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#12131C',
   },
   primaryButton: {
-    flex: 1,
-    backgroundColor: '#12131C',
-    paddingVertical: 15,
-    borderRadius: 26,
+    flex: 2,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 20,
     ...THEME.shadows.subtle,
   },
   primaryButtonText: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#FFFFFF',
   },
 });
-

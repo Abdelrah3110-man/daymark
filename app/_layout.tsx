@@ -4,12 +4,13 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAppStore } from '@/store/app-store';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 
 export default function RootLayout() {
   const isHydrated = useAppStore((s) => s.isHydrated);
   const settings = useAppStore((s) => s.settings);
   const initApp = useAppStore((s) => s.initApp);
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   const segments = useSegments();
 
@@ -30,19 +31,19 @@ export default function RootLayout() {
 
   if (!isHydrated) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={THEME.colors.text} />
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.text} />
       </View>
     );
   }
 
   return (
     <SafeAreaProvider>
-      <StatusBar style={settings.themePreference === 'dark' ? 'light' : 'dark'} />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: THEME.colors.background },
+          contentStyle: { backgroundColor: colors.background },
           animation: 'fade_from_bottom',
         }}
       >

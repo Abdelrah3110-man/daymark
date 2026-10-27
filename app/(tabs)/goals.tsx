@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useGoalStore } from '@/store/goal-store';
 import { useAppStore } from '@/store/app-store';
@@ -14,6 +14,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { Goal, Habit } from '@/types/app';
 
 export default function GoalsScreen() {
+  const { colors, isDark } = useTheme();
   const settings = useAppStore((s) => s.settings);
   const activeWeekStart = useAppStore((s) => s.activeWeekStart);
   const allGoals = useGoalStore((s) => s.goals);
@@ -30,16 +31,16 @@ export default function GoalsScreen() {
   const weekDates = getWeekDates(activeWeekStart);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
       {/* Top Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Goals & Habits</Text>
-          <Text style={styles.subtitle}>Long-term objectives and daily rituals</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Goals & Habits</Text>
+          <Text style={[styles.subtitle, { color: colors.textMuted }]}>Long-term objectives and daily rituals</Text>
         </View>
 
         <TouchableOpacity
-          style={styles.addBtn}
+          style={[styles.addBtn, { backgroundColor: colors.text }]}
           onPress={() => {
             if (activeTab === 'goals') {
               setGoalToEdit(null);
@@ -51,27 +52,43 @@ export default function GoalsScreen() {
           }}
           accessibilityLabel={`Add new ${activeTab === 'goals' ? 'goal' : 'habit'}`}
         >
-          <Ionicons name="add" size={22} color={THEME.colors.textInverse} />
+          <Ionicons name="add" size={22} color={colors.textInverse} />
         </TouchableOpacity>
       </View>
 
       {/* Segmented Switch */}
-      <View style={styles.segmentedWrap}>
+      <View style={[styles.segmentedWrap, { backgroundColor: colors.surfaceSecondary }]}>
         <TouchableOpacity
-          style={[styles.segmentBtn, activeTab === 'goals' && styles.segmentBtnActive]}
+          style={[
+            styles.segmentBtn,
+            activeTab === 'goals' && [styles.segmentBtnActive, { backgroundColor: colors.surface }],
+          ]}
           onPress={() => setActiveTab('goals')}
         >
-          <Text style={[styles.segmentText, activeTab === 'goals' && styles.segmentTextActive]}>
+          <Text
+            style={[
+              styles.segmentText,
+              { color: activeTab === 'goals' ? colors.text : colors.textMuted },
+            ]}
+          >
             Long-Term Goals ({goals.length})
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.segmentBtn, activeTab === 'habits' && styles.segmentBtnActive]}
+          style={[
+            styles.segmentBtn,
+            activeTab === 'habits' && [styles.segmentBtnActive, { backgroundColor: colors.surface }],
+          ]}
           onPress={() => setActiveTab('habits')}
         >
-          <Text style={[styles.segmentText, activeTab === 'habits' && styles.segmentTextActive]}>
-            Daily Habits ({habits.length})
+          <Text
+            style={[
+              styles.segmentText,
+              { color: activeTab === 'habits' ? colors.text : colors.textMuted },
+            ]}
+          >
+            Habit Trackers ({habits.length})
           </Text>
         </TouchableOpacity>
       </View>

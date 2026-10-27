@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Task } from '@/types/app';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { formatDurationMinutes } from '@/utils/dates';
 import { useTaskStore } from '@/store/task-store';
@@ -13,6 +13,7 @@ interface TaskCardProps {
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, onPress, showDate = false }) => {
+  const { colors, isDark } = useTheme();
   const completeTask = useTaskStore((s) => s.completeTask);
   const reopenTask = useTaskStore((s) => s.reopenTask);
 
@@ -29,13 +30,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onPress, showDate = fa
   const getDifficultyColor = () => {
     switch (task.difficulty) {
       case 'light':
-        return { bg: THEME.colors.mintLight, text: THEME.colors.mintDark, label: '5 XP' };
+        return { bg: colors.mintLight, text: colors.mintDark, label: '5 XP' };
       case 'medium':
-        return { bg: THEME.colors.peachLight, text: THEME.colors.peachDark, label: '10 XP' };
+        return { bg: colors.peachLight, text: colors.peachDark, label: '10 XP' };
       case 'hard':
-        return { bg: THEME.colors.softPinkLight, text: THEME.colors.softPinkDark, label: '20 XP' };
+        return { bg: colors.softPinkLight, text: colors.softPinkDark, label: '20 XP' };
       default:
-        return { bg: THEME.colors.surfaceSecondary, text: THEME.colors.textMuted, label: '10 XP' };
+        return { bg: colors.surfaceSecondary, text: colors.textMuted, label: '10 XP' };
     }
   };
 
@@ -43,26 +44,46 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onPress, showDate = fa
 
   return (
     <TouchableOpacity
-      style={[styles.card, isCompleted && styles.cardCompleted]}
+      style={[
+        styles.card,
+        {
+          backgroundColor: isCompleted ? colors.surfaceSecondary : colors.surface,
+          borderColor: colors.border,
+        },
+        isCompleted && styles.cardCompleted,
+      ]}
       onPress={onPress}
       activeOpacity={0.7}
       accessibilityRole="button"
       accessibilityLabel={`Task: ${task.title}, ${isCompleted ? 'completed' : 'pending'}`}
     >
       <TouchableOpacity
-        style={[styles.checkbox, isCompleted && styles.checkboxChecked]}
+        style={[
+          styles.checkbox,
+          { borderColor: colors.border },
+          isCompleted && {
+            backgroundColor: isDark ? '#FFFFFF' : '#12131C',
+            borderColor: isDark ? '#FFFFFF' : '#12131C',
+          },
+        ]}
         onPress={handleToggle}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: isCompleted }}
       >
-        {isCompleted && <Ionicons name="checkmark" size={14} color={THEME.colors.textInverse} />}
+        {isCompleted && (
+          <Ionicons name="checkmark" size={14} color={isDark ? '#12131C' : '#FFFFFF'} />
+        )}
       </TouchableOpacity>
 
       <View style={styles.contentWrap}>
         <View style={styles.topRow}>
           <Text
-            style={[styles.title, isCompleted && styles.titleCompleted]}
+            style={[
+              styles.title,
+              { color: colors.text },
+              isCompleted && styles.titleCompleted,
+            ]}
             numberOfLines={2}
           >
             {task.title}
@@ -76,22 +97,22 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onPress, showDate = fa
 
         <View style={styles.metaRow}>
           {task.scheduledTime && (
-            <View style={styles.tag}>
-              <Ionicons name="time-outline" size={12} color={THEME.colors.textMuted} />
-              <Text style={styles.tagText}>{task.scheduledTime}</Text>
+            <View style={[styles.tag, { backgroundColor: colors.surfaceSecondary }]}>
+              <Ionicons name="time-outline" size={12} color={colors.textMuted} />
+              <Text style={[styles.tagText, { color: colors.textMuted }]}>{task.scheduledTime}</Text>
             </View>
           )}
 
           {task.estimatedDuration > 0 && (
-            <View style={styles.tag}>
-              <Ionicons name="hourglass-outline" size={12} color={THEME.colors.textMuted} />
-              <Text style={styles.tagText}>{formatDurationMinutes(task.estimatedDuration)}</Text>
+            <View style={[styles.tag, { backgroundColor: colors.surfaceSecondary }]}>
+              <Ionicons name="hourglass-outline" size={12} color={colors.textMuted} />
+              <Text style={[styles.tagText, { color: colors.textMuted }]}>{formatDurationMinutes(task.estimatedDuration)}</Text>
             </View>
           )}
 
           {task.category ? (
-            <View style={[styles.tag, styles.categoryTag]}>
-              <Text style={styles.categoryText}>{task.category}</Text>
+            <View style={[styles.tag, { backgroundColor: colors.lightBlueLight }]}>
+              <Text style={[styles.categoryText, { color: colors.lightBlueDark }]}>{task.category}</Text>
             </View>
           ) : null}
 
@@ -100,9 +121,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onPress, showDate = fa
           </View>
 
           {task.postponementCount > 0 && (
-            <View style={styles.postponeTag}>
-              <Ionicons name="return-down-forward" size={11} color={THEME.colors.warning} />
-              <Text style={styles.postponeText}>{task.postponementCount}x</Text>
+            <View style={[styles.postponeTag, { backgroundColor: colors.warningLight }]}>
+              <Ionicons name="return-down-forward" size={11} color={colors.warning} />
+              <Text style={[styles.postponeText, { color: colors.warning }]}>{task.postponementCount}x</Text>
             </View>
           )}
         </View>

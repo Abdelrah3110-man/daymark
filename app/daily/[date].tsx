@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useTaskStore } from '@/store/task-store';
 import { usePlanningStore } from '@/store/planning-store';
@@ -17,6 +17,7 @@ import { Task, PlanningConflict } from '@/types/app';
 
 export default function DailyPreviewScreen() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const { date } = useLocalSearchParams<{ date: string }>();
   const dateKey = (Array.isArray(date) ? date[0] : date) || getTodayKey();
 
@@ -88,30 +89,30 @@ export default function DailyPreviewScreen() {
   const isConflict = conflicts.length > 0;
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
       {/* Top Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.borderSubtle }]}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="chevron-back" size={24} color={THEME.colors.text} />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
 
         <View style={styles.titleWrap}>
-          <Text style={styles.weekdayText}>{formatWeekdayFull(dateKey)}</Text>
-          <Text style={styles.dateSubtext}>{formatDayFull(dateKey)}</Text>
+          <Text style={[styles.weekdayText, { color: colors.text }]}>{formatWeekdayFull(dateKey)}</Text>
+          <Text style={[styles.dateSubtext, { color: colors.textMuted }]}>{formatDayFull(dateKey)}</Text>
         </View>
 
         <TouchableOpacity
-          style={styles.addBtn}
+          style={[styles.addBtn, { backgroundColor: colors.text }]}
           onPress={() => {
             setSelectedTask(null);
             setEditorVisible(true);
           }}
         >
-          <Ionicons name="add" size={22} color={THEME.colors.textInverse} />
+          <Ionicons name="add" size={22} color={colors.textInverse} />
         </TouchableOpacity>
       </View>
 
@@ -121,10 +122,10 @@ export default function DailyPreviewScreen() {
           style={[
             styles.syncPill,
             isConflict
-              ? styles.syncPillConflict
+              ? { backgroundColor: colors.dangerLight }
               : isCustomized
-              ? styles.syncPillCustom
-              : styles.syncPillSynced,
+              ? { backgroundColor: colors.peachLight }
+              : { backgroundColor: colors.mintLight },
           ]}
         >
           <Ionicons
@@ -138,20 +139,22 @@ export default function DailyPreviewScreen() {
             size={13}
             color={
               isConflict
-                ? THEME.colors.danger
+                ? colors.danger
                 : isCustomized
-                ? THEME.colors.peachDark
-                : THEME.colors.mintDark
+                ? colors.peachDark
+                : colors.mintDark
             }
           />
           <Text
             style={[
               styles.syncPillText,
-              isConflict
-                ? styles.textDanger
-                : isCustomized
-                ? styles.textPeach
-                : styles.textMint,
+              {
+                color: isConflict
+                  ? colors.danger
+                  : isCustomized
+                  ? colors.peachDark
+                  : colors.mintDark,
+              },
             ]}
           >
             {isConflict
@@ -173,21 +176,21 @@ export default function DailyPreviewScreen() {
       </View>
 
       {/* Workload Banner */}
-      <View style={styles.workloadBanner}>
+      <View style={[styles.workloadBanner, { backgroundColor: colors.surface, borderBottomColor: colors.borderSubtle }]}>
         <View style={styles.workloadLeft}>
-          <Text style={styles.workloadHeading}>DAY WORKLOAD</Text>
-          <Text style={styles.workloadValue}>
+          <Text style={[styles.workloadHeading, { color: colors.textMuted }]}>DAY WORKLOAD</Text>
+          <Text style={[styles.workloadValue, { color: colors.text }]}>
             {formatDurationMinutes(workload.totalMinutes)}{' '}
-            <Text style={styles.workloadLimit}>
+            <Text style={[styles.workloadLimit, { color: colors.textMuted }]}>
               / {formatDurationMinutes(workload.availabilityMinutes)}
             </Text>
           </Text>
         </View>
 
         <View style={styles.workloadRight}>
-          <Text style={styles.workloadTasksCount}>
-            {effectiveDayTasks.filter((t) => t.status === 'completed').length}/
-            {effectiveDayTasks.length} Completed
+          <Text style={[styles.workloadTasksCount, { color: colors.textSecondary }]}>
+            {effectiveDayTasks.filter((t) => t.status === 'completed').length} /{' '}
+            {effectiveDayTasks.length} Done
           </Text>
         </View>
       </View>

@@ -9,13 +9,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useTaskStore } from '@/store/task-store';
 import { useXPStore } from '@/store/xp-store';
 import { useAppStore } from '@/store/app-store';
-import { getTodayKey, formatDayShort, formatDurationMinutes } from '@/utils/dates';
-import { calculateLevelInfo, LEVEL_TITLES_AR } from '@/constants/xp-rules';
+import { getTodayKey, formatDayShort } from '@/utils/dates';
+import { calculateLevelInfo } from '@/constants/xp-rules';
 import { getAvatarById } from '@/constants/avatars';
 import { saveItem } from '@/services/persistence';
 
@@ -25,6 +25,7 @@ export type WidgetSize = 'medium' | 'small';
 
 export default function WidgetStudioScreen() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const settings = useAppStore((s) => s.settings);
   const tasks = useTaskStore((s) => s.tasks);
   const totalXP = useXPStore((s) => s.totalXP);
@@ -41,7 +42,6 @@ export default function WidgetStudioScreen() {
   const secondaryTask = todayTasks[1];
 
   const levelInfo = calculateLevelInfo(totalXP);
-  const titleAr = LEVEL_TITLES_AR[Math.min(10, levelInfo.level)] || 'المخطط البارع';
   const avatar = getAvatarById(settings.avatarId);
 
   const handleSyncWidget = async () => {
@@ -56,7 +56,7 @@ export default function WidgetStudioScreen() {
         avatarEmoji: avatar.emoji,
         totalXP,
         level: levelInfo.level,
-        rankTitle: titleAr,
+        rankTitle: levelInfo.title,
       },
       tasks: {
         total: todayTasks.length,
@@ -68,7 +68,7 @@ export default function WidgetStudioScreen() {
     };
 
     await saveItem('daymark_widget_data', widgetPayload);
-    setSyncedNotice('تمت مزامنة بيانات الويدجت بنجاح وتحديث الكاش!');
+    setSyncedNotice('Widget data synchronized and cached successfully!');
     setTimeout(() => setSyncedNotice(''), 3500);
   };
 
@@ -105,39 +105,39 @@ export default function WidgetStudioScreen() {
   const widgetTheme = getWidgetThemeStyles();
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: THEME.colors.background }]} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: THEME.colors.surface, borderBottomColor: THEME.colors.border }]}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="chevron-back" size={24} color={THEME.colors.text} />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: THEME.colors.text }]}>ويدجت الشاشة الرئيسية (Home Widgets)</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Home Screen Widgets</Text>
         <View style={{ width: 36 }} />
       </View>
 
       {syncedNotice ? (
-        <View style={styles.noticeBanner}>
-          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-          <Text style={styles.noticeText}>{syncedNotice}</Text>
+        <View style={[styles.noticeBanner, { backgroundColor: colors.successLight }]}>
+          <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+          <Text style={[styles.noticeText, { color: colors.success }]}>{syncedNotice}</Text>
         </View>
       ) : null}
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Intro */}
         <View style={styles.introWrap}>
-          <Text style={[styles.mainHeading, { color: THEME.colors.text }]}>استوديو ويدجت الموبايل</Text>
-          <Text style={[styles.subHeading, { color: THEME.colors.textMuted }]}>
-            خصص مظهر الويدجت التفاعلي وضعه على الشاشة الرئيسية لهاتفك للوصول السريع لمهامك ونقاطك دون فتح التطبيق!
+          <Text style={[styles.mainHeading, { color: colors.text }]}>Mobile Widget Studio</Text>
+          <Text style={[styles.subHeading, { color: colors.textSecondary }]}>
+            Customize your phone home screen widgets to quickly glance at today's agenda, your XP rank, and quick actions right from your home screen.
           </Text>
         </View>
 
         {/* 1. Live Interactive Widget Phone Preview */}
         <View style={styles.previewContainer}>
-          <Text style={styles.previewTag}>معاينة حية لشكل الويدجت على هاتفك</Text>
+          <Text style={[styles.previewTag, { color: colors.textSecondary }]}>Live Phone Widget Preview</Text>
 
           <View
             style={[
@@ -193,7 +193,7 @@ export default function WidgetStudioScreen() {
 
                 <View style={styles.widgetTaskSection}>
                   <Text style={[styles.widgetMainTitle, { color: widgetTheme.text }]}>
-                    {titleAr}
+                    {levelInfo.title}
                   </Text>
                   <Text style={[styles.widgetSubText, { color: widgetTheme.textMuted }]}>
                     ⚡ {totalXP} Total XP • 🔥 Streak: 7 Days
@@ -226,32 +226,32 @@ export default function WidgetStudioScreen() {
         </View>
 
         {/* 2. Customization Controls */}
-        <View style={[styles.card, { backgroundColor: THEME.colors.surface, borderColor: THEME.colors.border }]}>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           {/* Widget Type Selector */}
-          <Text style={[styles.controlLabel, { color: THEME.colors.text }]}>1. نوع الويدجت (Widget Type)</Text>
+          <Text style={[styles.controlLabel, { color: colors.text }]}>1. Widget Type</Text>
           <View style={styles.segmentedRow}>
             {[
-              { id: 'today_tasks' as const, label: 'مهام اليوم', icon: 'checkbox-outline' },
-              { id: 'xp_streak' as const, label: 'الرتبة والـ XP', icon: 'ribbon-outline' },
-              { id: 'quick_actions' as const, label: 'إجراءات سريعة', icon: 'flash-outline' },
+              { id: 'today_tasks' as const, label: "Today's Tasks", icon: 'checkbox-outline' },
+              { id: 'xp_streak' as const, label: 'XP & Rank', icon: 'ribbon-outline' },
+              { id: 'quick_actions' as const, label: 'Quick Actions', icon: 'flash-outline' },
             ].map((t) => (
               <TouchableOpacity
                 key={t.id}
                 style={[
                   styles.segmentBtn,
-                  selectedWidgetType === t.id && styles.segmentBtnActive,
+                  { backgroundColor: selectedWidgetType === t.id ? (isDark ? '#FFFFFF' : '#12131C') : colors.surfaceSecondary },
                 ]}
                 onPress={() => setSelectedWidgetType(t.id)}
               >
                 <Ionicons
                   name={t.icon as any}
                   size={14}
-                  color={selectedWidgetType === t.id ? '#FFFFFF' : THEME.colors.textMuted}
+                  color={selectedWidgetType === t.id ? (isDark ? '#12131C' : '#FFFFFF') : colors.textMuted}
                 />
                 <Text
                   style={[
                     styles.segmentText,
-                    selectedWidgetType === t.id && styles.segmentTextActive,
+                    { color: selectedWidgetType === t.id ? (isDark ? '#12131C' : '#FFFFFF') : colors.textSecondary },
                   ]}
                 >
                   {t.label}
@@ -261,27 +261,27 @@ export default function WidgetStudioScreen() {
           </View>
 
           {/* Theme Selector */}
-          <Text style={[styles.controlLabel, { color: THEME.colors.text, marginTop: 16 }]}>
-            2. مظهر الويدجت (Widget Theme)
+          <Text style={[styles.controlLabel, { color: colors.text, marginTop: 16 }]}>
+            2. Widget Theme
           </Text>
           <View style={styles.segmentedRow}>
             {[
-              { id: 'pastel' as const, label: 'باستيل روناسيت 🎨' },
-              { id: 'dark' as const, label: 'ميدنايت داكن 🌙' },
-              { id: 'light' as const, label: 'أبيض ناصع ☀️' },
+              { id: 'pastel' as const, label: 'Pastel 🎨' },
+              { id: 'dark' as const, label: 'Midnight Dark 🌙' },
+              { id: 'light' as const, label: 'Crisp Light ☀️' },
             ].map((theme) => (
               <TouchableOpacity
                 key={theme.id}
                 style={[
                   styles.segmentBtn,
-                  selectedTheme === theme.id && styles.segmentBtnActive,
+                  { backgroundColor: selectedTheme === theme.id ? (isDark ? '#FFFFFF' : '#12131C') : colors.surfaceSecondary },
                 ]}
                 onPress={() => setSelectedTheme(theme.id)}
               >
                 <Text
                   style={[
                     styles.segmentText,
-                    selectedTheme === theme.id && styles.segmentTextActive,
+                    { color: selectedTheme === theme.id ? (isDark ? '#12131C' : '#FFFFFF') : colors.textSecondary },
                   ]}
                 >
                   {theme.label}
@@ -291,26 +291,26 @@ export default function WidgetStudioScreen() {
           </View>
 
           {/* Size Selector */}
-          <Text style={[styles.controlLabel, { color: THEME.colors.text, marginTop: 16 }]}>
-            3. حجم الويدجت (Widget Size)
+          <Text style={[styles.controlLabel, { color: colors.text, marginTop: 16 }]}>
+            3. Widget Size
           </Text>
           <View style={styles.segmentedRow}>
             {[
-              { id: 'medium' as const, label: 'مستطيل عريض (4x2)' },
-              { id: 'small' as const, label: 'مربع مدمج (2x2)' },
+              { id: 'medium' as const, label: 'Wide (4x2)' },
+              { id: 'small' as const, label: 'Compact (2x2)' },
             ].map((sz) => (
               <TouchableOpacity
                 key={sz.id}
                 style={[
                   styles.segmentBtn,
-                  selectedSize === sz.id && styles.segmentBtnActive,
+                  { backgroundColor: selectedSize === sz.id ? (isDark ? '#FFFFFF' : '#12131C') : colors.surfaceSecondary },
                 ]}
                 onPress={() => setSelectedSize(sz.id)}
               >
                 <Text
                   style={[
                     styles.segmentText,
-                    selectedSize === sz.id && styles.segmentTextActive,
+                    { color: selectedSize === sz.id ? (isDark ? '#12131C' : '#FFFFFF') : colors.textSecondary },
                   ]}
                 >
                   {sz.label}
@@ -320,37 +320,47 @@ export default function WidgetStudioScreen() {
           </View>
 
           {/* Sync Button */}
-          <TouchableOpacity style={styles.syncBtn} onPress={handleSyncWidget} activeOpacity={0.85}>
-            <Ionicons name="sync" size={18} color="#FFFFFF" />
-            <Text style={styles.syncBtnText}>تحديث وحفظ بيانات الويدجت (Sync Data)</Text>
+          <TouchableOpacity
+            style={[styles.syncBtn, { backgroundColor: colors.text }]}
+            onPress={handleSyncWidget}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="sync" size={18} color={colors.textInverse} />
+            <Text style={[styles.syncBtnText, { color: colors.textInverse }]}>Sync Widget Data</Text>
           </TouchableOpacity>
         </View>
 
         {/* 3. How to Add to Phone Home Screen Instructions */}
-        <View style={[styles.card, { backgroundColor: THEME.colors.surface, borderColor: THEME.colors.border }]}>
-          <Text style={[styles.controlLabel, { color: THEME.colors.text }]}>
-            📱 كيفية إضافة الويدجت على شاشة هاتفك الرئيسية:
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.controlLabel, { color: colors.text }]}>
+            📱 How to Add DAYMARK Widget to Your Phone Home Screen:
           </Text>
 
           <View style={styles.stepsList}>
             <View style={styles.stepItem}>
-              <View style={styles.stepNumberBadge}><Text style={styles.stepNumberText}>1</Text></View>
-              <Text style={[styles.stepItemText, { color: THEME.colors.text }]}>
-                اذهب إلى الشاشة الرئيسية لهاتفك (Home Screen) واضغط مطولاً في أي مساحة فارغة.
+              <View style={[styles.stepNumberBadge, { backgroundColor: colors.lavender }]}>
+                <Text style={styles.stepNumberText}>1</Text>
+              </View>
+              <Text style={[styles.stepItemText, { color: colors.textSecondary }]}>
+                Go to your phone's Home Screen and touch and hold an empty space.
               </Text>
             </View>
 
             <View style={styles.stepItem}>
-              <View style={styles.stepNumberBadge}><Text style={styles.stepNumberText}>2</Text></View>
-              <Text style={[styles.stepItemText, { color: THEME.colors.text }]}>
-                اضغط على زر **Widgets (الأدوات/التطبيقات المصغرة)** أو علامة (+) في أعلى الشاشة.
+              <View style={[styles.stepNumberBadge, { backgroundColor: colors.lavender }]}>
+                <Text style={styles.stepNumberText}>2</Text>
+              </View>
+              <Text style={[styles.stepItemText, { color: colors.textSecondary }]}>
+                Tap the <Text style={{ fontWeight: '700', color: colors.text }}>Widgets</Text> button or the (+) icon at the top of your screen.
               </Text>
             </View>
 
             <View style={styles.stepItem}>
-              <View style={styles.stepNumberBadge}><Text style={styles.stepNumberText}>3</Text></View>
-              <Text style={[styles.stepItemText, { color: THEME.colors.text }]}>
-                ابحث عن تطبيق **DAYMARK** واختر الحجم والمظهر ثم اسحبه وضعْه على شاشتك.
+              <View style={[styles.stepNumberBadge, { backgroundColor: colors.lavender }]}>
+                <Text style={styles.stepNumberText}>3</Text>
+              </View>
+              <Text style={[styles.stepItemText, { color: colors.textSecondary }]}>
+                Search for <Text style={{ fontWeight: '700', color: colors.text }}>DAYMARK</Text>, choose your preferred size, and drag it onto your home screen.
               </Text>
             </View>
           </View>
@@ -386,7 +396,6 @@ const styles = StyleSheet.create({
   noticeBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#D1FAE5',
     paddingHorizontal: 16,
     paddingVertical: 10,
     gap: 8,
@@ -394,7 +403,6 @@ const styles = StyleSheet.create({
   noticeText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#065F46',
   },
   scroll: {
     flex: 1,
@@ -402,43 +410,40 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     paddingBottom: 40,
+    gap: 16,
   },
   introWrap: {
-    marginBottom: 16,
+    marginBottom: 4,
   },
   mainHeading: {
     fontSize: 22,
     fontWeight: '800',
-    textAlign: 'right',
+    letterSpacing: -0.4,
   },
   subHeading: {
     fontSize: 13,
-    marginTop: 4,
     lineHeight: 18,
-    textAlign: 'right',
+    marginTop: 4,
   },
   previewContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    paddingVertical: 10,
   },
   previewTag: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#9CA3AF',
     marginBottom: 10,
-    letterSpacing: 0.5,
   },
   widgetBox: {
-    borderRadius: 26,
-    padding: 18,
+    borderRadius: 24,
+    padding: 16,
     borderWidth: 1,
+    ...THEME.shadows.card,
     justifyContent: 'space-between',
-    ...THEME.shadows.floating,
   },
   widgetBoxMedium: {
     width: '100%',
-    maxWidth: 360,
-    minHeight: 145,
+    height: 140,
   },
   widgetBoxSmall: {
     width: 170,
@@ -450,31 +455,30 @@ const styles = StyleSheet.create({
   },
   widgetTopRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  avatarEmoji: {
-    fontSize: 26,
+    justifyContent: 'space-between',
   },
   pillBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    gap: 4,
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    gap: 4,
   },
   pillText: {
     fontSize: 11,
     fontWeight: '700',
   },
+  avatarEmoji: {
+    fontSize: 24,
+  },
   widgetTaskSection: {
-    marginVertical: 8,
+    marginVertical: 4,
   },
   widgetMainTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '800',
-    lineHeight: 22,
   },
   widgetSubText: {
     fontSize: 12,
@@ -484,10 +488,10 @@ const styles = StyleSheet.create({
   secondaryTaskRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
     gap: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 10,
   },
   secondaryText: {
     fontSize: 12,
@@ -496,86 +500,75 @@ const styles = StyleSheet.create({
   },
   quickIconsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 6,
+    gap: 12,
+    marginTop: 8,
   },
   quickIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
   },
   card: {
-    borderRadius: 24,
-    padding: 18,
-    marginBottom: 16,
+    borderRadius: 20,
+    padding: 16,
     borderWidth: 1,
     ...THEME.shadows.subtle,
   },
   controlLabel: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
     marginBottom: 10,
-    textAlign: 'right',
   },
   segmentedRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 8,
   },
   segmentBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
-    backgroundColor: '#F3F4F6',
-    gap: 5,
-  },
-  segmentBtnActive: {
-    backgroundColor: '#12131C',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderRadius: 12,
   },
   segmentText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#4B5563',
-  },
-  segmentTextActive: {
-    color: '#FFFFFF',
   },
   syncBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#12131C',
-    paddingVertical: 14,
-    borderRadius: 22,
-    marginTop: 20,
     gap: 8,
+    paddingVertical: 14,
+    borderRadius: 16,
+    marginTop: 20,
     ...THEME.shadows.subtle,
   },
   syncBtnText: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#FFFFFF',
   },
   stepsList: {
     gap: 12,
     marginTop: 6,
   },
   stepItem: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: 10,
   },
   stepNumberBadge: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#C8B6FF',
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 1,
   },
   stepNumberText: {
     fontSize: 12,
@@ -584,8 +577,7 @@ const styles = StyleSheet.create({
   },
   stepItemText: {
     fontSize: 13,
-    flex: 1,
     lineHeight: 18,
-    textAlign: 'right',
+    flex: 1,
   },
 });

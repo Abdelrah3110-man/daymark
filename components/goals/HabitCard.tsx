@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Habit } from '@/types/app';
 import { Ionicons } from '@expo/vector-icons';
 import { useGoalStore } from '@/store/goal-store';
@@ -13,6 +13,7 @@ interface HabitCardProps {
 }
 
 export const HabitCard: React.FC<HabitCardProps> = ({ habit, weekDates, onEdit }) => {
+  const { colors, isDark } = useTheme();
   const toggleOccurrence = useGoalStore((s) => s.toggleHabitOccurrence);
   const isCompletedOnDate = useGoalStore((s) => s.isHabitCompletedOnDate);
   const todayKey = getTodayKey();
@@ -20,11 +21,11 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, weekDates, onEdit }
   const completedCountThisWeek = weekDates.filter((d) => isCompletedOnDate(habit.id, d)).length;
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={styles.topRow}>
         <View style={styles.titleWrap}>
-          <Text style={styles.title}>{habit.title}</Text>
-          <Text style={styles.targetText}>
+          <Text style={[styles.title, { color: colors.text }]}>{habit.title}</Text>
+          <Text style={[styles.targetText, { color: colors.textMuted }]}>
             Target: {habit.targetDaysPerWeek} days/week • Completed {completedCountThisWeek} this week
           </Text>
         </View>
@@ -34,7 +35,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, weekDates, onEdit }
           onPress={() => onEdit(habit)}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="ellipsis-horizontal" size={18} color={THEME.colors.text} />
+          <Ionicons name="ellipsis-horizontal" size={18} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -49,20 +50,28 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, weekDates, onEdit }
 
           return (
             <View key={dateKey} style={styles.dayCol}>
-              <Text style={[styles.dayLabel, isToday && styles.dayLabelToday]}>{dayLabel}</Text>
-              <Text style={[styles.dateNumber, isToday && styles.dateNumberToday]}>{dayNumber}</Text>
+              <Text style={[styles.dayLabel, { color: isToday ? colors.lavenderDark : colors.textMuted }]}>
+                {dayLabel}
+              </Text>
+              <Text style={[styles.dateNumber, { color: isToday ? colors.lavenderDark : colors.textLight }]}>
+                {dayNumber}
+              </Text>
 
               <TouchableOpacity
                 style={[
                   styles.circle,
-                  isDone && styles.circleDone,
-                  isToday && !isDone && styles.circleToday,
+                  {
+                    backgroundColor: isDone ? (isDark ? '#FFFFFF' : '#12131C') : colors.surfaceSecondary,
+                    borderColor: isDone ? (isDark ? '#FFFFFF' : '#12131C') : isToday ? colors.lavender : colors.border,
+                  },
                 ]}
                 onPress={() => toggleOccurrence(habit.id, dateKey)}
                 activeOpacity={0.7}
                 accessibilityLabel={`Check in ${habit.title} for ${dateKey}`}
               >
-                {isDone && <Ionicons name="checkmark" size={14} color={THEME.colors.textInverse} />}
+                {isDone && (
+                  <Ionicons name="checkmark" size={14} color={isDark ? '#12131C' : '#FFFFFF'} />
+                )}
               </TouchableOpacity>
             </View>
           );

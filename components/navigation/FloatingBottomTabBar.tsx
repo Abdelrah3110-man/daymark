@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { THEME } from '@/constants/theme';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { THEME, useTheme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -30,6 +30,7 @@ export const FloatingBottomTabBar: React.FC<CustomTabBarProps> = ({
   navigation,
 }) => {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
 
   if (!state || !state.routes || state.routes.length === 0) {
     return null;
@@ -71,7 +72,16 @@ export const FloatingBottomTabBar: React.FC<CustomTabBarProps> = ({
 
   return (
     <View style={[styles.outerContainer, { paddingBottom: Math.max(insets.bottom, 14) }]}>
-      <View style={styles.pillContainer}>
+      <View
+        style={[
+          styles.pillContainer,
+          {
+            backgroundColor: colors.navBackground,
+            borderWidth: isDark ? 1 : 0,
+            borderColor: colors.navBorder,
+          },
+        ]}
+      >
         {state.routes.map((route, index) => {
           const descriptor = descriptors ? descriptors[route.key] : undefined;
           const options = descriptor?.options || {};
@@ -105,11 +115,11 @@ export const FloatingBottomTabBar: React.FC<CustomTabBarProps> = ({
               activeOpacity={0.8}
             >
               {isFocused ? (
-                <View style={styles.activeCircle}>
-                  <Ionicons name={iconName} size={22} color={THEME.colors.navActive} />
+                <View style={[styles.activeCircle, { backgroundColor: colors.navActiveCircle }]}>
+                  <Ionicons name={iconName} size={22} color={colors.navActive} />
                 </View>
               ) : (
-                <Ionicons name={iconName} size={22} color={THEME.colors.navInactive} />
+                <Ionicons name={iconName} size={22} color={colors.navInactive} />
               )}
             </TouchableOpacity>
           );
@@ -130,7 +140,6 @@ const styles = StyleSheet.create({
   },
   pillContainer: {
     flexDirection: 'row',
-    backgroundColor: THEME.colors.navBackground,
     borderRadius: 40,
     paddingVertical: 7,
     paddingHorizontal: 8,
@@ -150,10 +159,10 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: THEME.colors.navActiveCircle,
     alignItems: 'center',
     justifyContent: 'center',
     ...THEME.shadows.subtle,
   },
 });
+
 

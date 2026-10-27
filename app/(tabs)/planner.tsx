@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStore } from '@/store/app-store';
 import { useTaskStore } from '@/store/task-store';
@@ -15,6 +15,7 @@ import { TaskEditor } from '@/components/tasks/TaskEditor';
 import { Task } from '@/types/app';
 
 export default function PlannerScreen() {
+  const { colors, isDark } = useTheme();
   const settings = useAppStore((s) => s.settings);
   const activeWeekStart = useAppStore((s) => s.activeWeekStart);
   const setActiveWeekStart = useAppStore((s) => s.setActiveWeekStart);
@@ -57,7 +58,7 @@ export default function PlannerScreen() {
   const isPrepared = weeklyPlan?.status === 'prepared';
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
       {/* Week Navigation Header */}
       <WeekNavigationHeader
         currentWeekStart={activeWeekStart}
@@ -65,41 +66,53 @@ export default function PlannerScreen() {
       />
 
       {/* Plan Status & Generation Header Bar */}
-      <View style={styles.statusBar}>
+      <View style={[styles.statusBar, { backgroundColor: colors.surface, borderBottomColor: colors.borderSubtle }]}>
         <View style={styles.statusCol}>
           <View style={styles.statusTagRow}>
             <View
               style={[
                 styles.statusBadge,
-                isPrepared ? styles.statusPrepared : styles.statusDraft,
+                isPrepared
+                  ? { backgroundColor: colors.mintLight }
+                  : { backgroundColor: colors.surfaceSecondary },
               ]}
             >
               <Text
                 style={[
                   styles.statusBadgeText,
-                  isPrepared ? styles.textPrepared : styles.textDraft,
+                  isPrepared ? { color: colors.mintDark } : { color: colors.textMuted },
                 ]}
               >
                 {isPrepared ? 'PREVIEWS PREPARED' : 'WEEKLY DRAFT'}
               </Text>
             </View>
-            <Text style={styles.workloadOverviewText}>
+            <Text style={[styles.workloadOverviewText, { color: colors.textSecondary }]}>
               {workloadSummary.totalTasks} tasks • {formatDurationMinutes(workloadSummary.totalMinutes)} total
             </Text>
           </View>
         </View>
 
         <TouchableOpacity
-          style={[styles.generateBtn, isPrepared && styles.regenerateBtn]}
+          style={[
+            styles.generateBtn,
+            isPrepared
+              ? { backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border }
+              : { backgroundColor: colors.text },
+          ]}
           onPress={handleGeneratePreviews}
           activeOpacity={0.8}
         >
           <Ionicons
             name={isPrepared ? 'sync' : 'sparkles'}
             size={14}
-            color={isPrepared ? THEME.colors.text : THEME.colors.textInverse}
+            color={isPrepared ? colors.text : colors.textInverse}
           />
-          <Text style={[styles.generateBtnText, isPrepared && styles.regenerateBtnText]}>
+          <Text
+            style={[
+              styles.generateBtnText,
+              { color: isPrepared ? colors.text : colors.textInverse },
+            ]}
+          >
             {isPrepared ? 'Regenerate' : 'Generate Previews'}
           </Text>
         </TouchableOpacity>

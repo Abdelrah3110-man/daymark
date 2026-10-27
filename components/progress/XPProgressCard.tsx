@@ -1,44 +1,45 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { calculateLevelInfo } from '@/constants/xp-rules';
 import { useXPStore } from '@/store/xp-store';
 
 export const XPProgressCard: React.FC = () => {
+  const { colors, isDark } = useTheme();
   const totalXP = useXPStore((s) => s.totalXP);
   const transactions = useXPStore((s) => s.transactions);
   const levelInfo = calculateLevelInfo(totalXP);
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={styles.topRow}>
-        <View style={styles.levelBadge}>
-          <Text style={styles.levelNum}>LVL {levelInfo.level}</Text>
+        <View style={[styles.levelBadge, { backgroundColor: colors.lavender }]}>
+          <Text style={[styles.levelNum, { color: colors.lavenderDark }]}>LVL {levelInfo.level}</Text>
         </View>
 
         <View style={styles.titleWrap}>
-          <Text style={styles.levelTitle}>{levelInfo.title}</Text>
-          <Text style={styles.xpText}>
+          <Text style={[styles.levelTitle, { color: colors.text }]}>{levelInfo.title}</Text>
+          <Text style={[styles.xpText, { color: colors.textMuted }]}>
             {levelInfo.totalXP} Total XP • {levelInfo.nextLevelXP - levelInfo.totalXP} XP to Level {levelInfo.level + 1}
           </Text>
         </View>
       </View>
 
-      <View style={styles.track}>
-        <View style={[styles.fill, { width: `${levelInfo.progressPercent}%` }]} />
+      <View style={[styles.track, { backgroundColor: colors.surfaceSecondary }]}>
+        <View style={[styles.fill, { width: `${levelInfo.progressPercent}%`, backgroundColor: colors.lavender }]} />
       </View>
 
       {transactions.length > 0 && (
-        <View style={styles.recentWrap}>
-          <Text style={styles.recentHeading}>RECENT ACTIVITY REWARDS</Text>
+        <View style={[styles.recentWrap, { borderTopColor: colors.borderSubtle }]}>
+          <Text style={[styles.recentHeading, { color: colors.textMuted }]}>RECENT ACTIVITY REWARDS</Text>
           {transactions.slice(0, 3).map((tx) => (
             <View key={tx.id} style={styles.txRow}>
-              <Ionicons name="sparkles" size={12} color={THEME.colors.lavenderDark} />
-              <Text style={styles.txReason} numberOfLines={1}>
+              <Ionicons name="sparkles" size={12} color={colors.lavenderDark} />
+              <Text style={[styles.txReason, { color: colors.textSecondary }]} numberOfLines={1}>
                 {tx.reason}
               </Text>
-              <Text style={styles.txAmount}>+{tx.amount} XP</Text>
+              <Text style={[styles.txAmount, { color: colors.lavenderDark }]}>+{tx.amount} XP</Text>
             </View>
           ))}
         </View>

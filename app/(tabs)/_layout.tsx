@@ -1,15 +1,17 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { FloatingBottomTabBar } from '@/components/navigation/FloatingBottomTabBar';
-import { THEME } from '@/constants/theme';
+import { useTheme } from '@/constants/theme';
 
 export default function TabsLayout() {
+  const { colors } = useTheme();
+
   return (
     <Tabs
       tabBar={(props: any) => <FloatingBottomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        sceneStyle: { backgroundColor: THEME.colors.background },
+        sceneStyle: { backgroundColor: colors.background },
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Home' }} />

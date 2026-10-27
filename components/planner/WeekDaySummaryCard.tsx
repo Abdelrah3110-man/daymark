@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Task, DayWorkloadSummary } from '@/types/app';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { formatWeekdayFull, formatDayShort, getTodayKey, formatDurationMinutes } from '@/utils/dates';
 import { useRouter } from 'expo-router';
@@ -22,6 +22,7 @@ export const WeekDaySummaryCard: React.FC<WeekDaySummaryCardProps> = ({
   onSelectTask,
 }) => {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const isToday = dateKey === getTodayKey();
   const activeTasks = tasks.filter((t) => t.status !== 'cancelled');
   const completedCount = activeTasks.filter((t) => t.status === 'completed').length;
@@ -32,44 +33,53 @@ export const WeekDaySummaryCard: React.FC<WeekDaySummaryCardProps> = ({
   );
 
   const getMeterColor = () => {
-    if (workload.isOverloaded) return THEME.colors.danger;
-    if (workloadPct > 75) return THEME.colors.peachDark;
-    return THEME.colors.mintDark;
+    if (workload.isOverloaded) return colors.danger;
+    if (workloadPct > 75) return colors.peach;
+    return colors.mintDark;
   };
 
   return (
-    <View style={[styles.card, isToday && styles.cardToday]}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.surface,
+          borderColor: isToday ? colors.lavender : colors.border,
+          borderWidth: isToday ? 2 : 1,
+        },
+      ]}
+    >
       {/* Header */}
       <View style={styles.headerRow}>
         <View style={styles.dateCol}>
           <View style={styles.titleRow}>
-            <Text style={styles.weekdayText}>{formatWeekdayFull(dateKey)}</Text>
+            <Text style={[styles.weekdayText, { color: colors.text }]}>{formatWeekdayFull(dateKey)}</Text>
             {isToday && (
-              <View style={styles.todayBadge}>
-                <Text style={styles.todayText}>TODAY</Text>
+              <View style={[styles.todayBadge, { backgroundColor: colors.lavenderLight }]}>
+                <Text style={[styles.todayText, { color: colors.lavenderDark }]}>TODAY</Text>
               </View>
             )}
           </View>
-          <Text style={styles.dateText}>{formatDayShort(dateKey)}</Text>
+          <Text style={[styles.dateText, { color: colors.textMuted }]}>{formatDayShort(dateKey)}</Text>
         </View>
 
         <View style={styles.actionRow}>
           <TouchableOpacity
-            style={styles.addBtn}
+            style={[styles.addBtn, { backgroundColor: colors.surfaceSecondary }]}
             onPress={() => onAddTask(dateKey)}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             accessibilityLabel={`Add task to ${dateKey}`}
           >
-            <Ionicons name="add" size={18} color={THEME.colors.text} />
+            <Ionicons name="add" size={18} color={colors.text} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.openDayBtn}
+            style={[styles.openDayBtn, { backgroundColor: colors.surfaceSecondary }]}
             onPress={() => router.push(`/daily/${dateKey}` as any)}
             activeOpacity={0.7}
           >
-            <Text style={styles.openDayText}>Daily View</Text>
-            <Ionicons name="chevron-forward" size={14} color={THEME.colors.text} />
+            <Text style={[styles.openDayText, { color: colors.text }]}>Daily View</Text>
+            <Ionicons name="chevron-forward" size={14} color={colors.text} />
           </TouchableOpacity>
         </View>
       </View>
@@ -77,16 +87,16 @@ export const WeekDaySummaryCard: React.FC<WeekDaySummaryCardProps> = ({
       {/* Workload Meter */}
       <View style={styles.workloadWrap}>
         <View style={styles.workloadStatsRow}>
-          <Text style={styles.workloadLabel}>
-            Workload: <Text style={styles.workloadVal}>{formatDurationMinutes(workload.totalMinutes)}</Text>
+          <Text style={[styles.workloadLabel, { color: colors.textMuted }]}>
+            Workload: <Text style={[styles.workloadVal, { color: colors.text }]}>{formatDurationMinutes(workload.totalMinutes)}</Text>
             {' '}/ {formatDurationMinutes(workload.availabilityMinutes)}
           </Text>
-          <Text style={styles.taskCountLabel}>
+          <Text style={[styles.taskCountLabel, { color: colors.textSecondary }]}>
             {completedCount}/{activeTasks.length} Done
           </Text>
         </View>
 
-        <View style={styles.track}>
+        <View style={[styles.track, { backgroundColor: colors.surfaceSecondary }]}>
           <View
             style={[
               styles.fill,
@@ -98,18 +108,18 @@ export const WeekDaySummaryCard: React.FC<WeekDaySummaryCardProps> = ({
 
       {/* Warnings if overloaded or conflicts */}
       {workload.isOverloaded && (
-        <View style={styles.warningPill}>
-          <Ionicons name="warning-outline" size={13} color={THEME.colors.danger} />
-          <Text style={styles.warningText}>
+        <View style={[styles.warningPill, { backgroundColor: colors.dangerLight }]}>
+          <Ionicons name="warning-outline" size={13} color={colors.danger} />
+          <Text style={[styles.warningText, { color: colors.danger }]}>
             Overloaded day! Exceeds available time by {formatDurationMinutes(workload.totalMinutes - workload.availabilityMinutes)}.
           </Text>
         </View>
       )}
 
       {workload.conflictCount > 0 && (
-        <View style={[styles.warningPill, styles.conflictPill]}>
-          <Ionicons name="time-outline" size={13} color={THEME.colors.peachDark} />
-          <Text style={[styles.warningText, { color: THEME.colors.peachDark }]}>
+        <View style={[styles.warningPill, styles.conflictPill, { backgroundColor: colors.peachLight }]}>
+          <Ionicons name="time-outline" size={13} color={colors.peachDark} />
+          <Text style={[styles.warningText, { color: colors.peachDark }]}>
             {workload.conflictCount} scheduling conflict(s) detected.
           </Text>
         </View>
@@ -118,25 +128,27 @@ export const WeekDaySummaryCard: React.FC<WeekDaySummaryCardProps> = ({
       {/* Tasks Preview List */}
       <View style={styles.taskList}>
         {activeTasks.length === 0 ? (
-          <Text style={styles.emptyTasksText}>No tasks planned yet. Tap + to add.</Text>
+          <Text style={[styles.emptyTasksText, { color: colors.textMuted }]}>No tasks planned yet. Tap + to add.</Text>
         ) : (
           activeTasks.slice(0, 4).map((task) => (
             <TouchableOpacity
               key={task.id}
-              style={styles.taskRow}
+              style={[styles.taskRow, { borderBottomColor: colors.borderSubtle }]}
               onPress={() => onSelectTask(task)}
               activeOpacity={0.7}
             >
               <View
                 style={[
                   styles.miniDot,
-                  task.status === 'completed' && styles.miniDotCompleted,
+                  { backgroundColor: colors.border },
+                  task.status === 'completed' && { backgroundColor: colors.success },
                 ]}
               />
               <Text
                 style={[
                   styles.taskTitle,
-                  task.status === 'completed' && styles.taskTitleCompleted,
+                  { color: colors.text },
+                  task.status === 'completed' && { color: colors.textMuted, textDecorationLine: 'line-through' },
                 ]}
                 numberOfLines={1}
               >
@@ -146,7 +158,7 @@ export const WeekDaySummaryCard: React.FC<WeekDaySummaryCardProps> = ({
                 <Ionicons name="star" size={11} color="#D97706" style={{ marginRight: 4 }} />
               )}
               {task.scheduledTime ? (
-                <Text style={styles.taskTime}>{task.scheduledTime}</Text>
+                <Text style={[styles.taskTime, { color: colors.textSecondary }]}>{task.scheduledTime}</Text>
               ) : null}
             </TouchableOpacity>
           ))
@@ -157,7 +169,7 @@ export const WeekDaySummaryCard: React.FC<WeekDaySummaryCardProps> = ({
             onPress={() => router.push(`/daily/${dateKey}` as any)}
             style={styles.moreTasksBtn}
           >
-            <Text style={styles.moreTasksText}>+ {activeTasks.length - 4} more tasks</Text>
+            <Text style={[styles.moreTasksText, { color: colors.lavenderDark }]}>+ {activeTasks.length - 4} more tasks</Text>
           </TouchableOpacity>
         )}
       </View>

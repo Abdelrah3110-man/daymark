@@ -1,7 +1,6 @@
 export interface AvatarDefinition {
   id: string;
   name: string;
-  nameAr: string;
   emoji: string;
   iconName: string;
   bgColor: string;
@@ -15,7 +14,6 @@ export const AVATARS: AvatarDefinition[] = [
   {
     id: 'fox',
     name: 'Smart Fox',
-    nameAr: 'الثعلب الذكي',
     emoji: '🦊',
     iconName: 'paw',
     bgColor: '#FFE3D1',
@@ -26,7 +24,6 @@ export const AVATARS: AvatarDefinition[] = [
   {
     id: 'panda',
     name: 'Zen Panda',
-    nameAr: 'الباندا الهادئ',
     emoji: '🐼',
     iconName: 'heart',
     bgColor: '#E2F0D9',
@@ -37,7 +34,6 @@ export const AVATARS: AvatarDefinition[] = [
   {
     id: 'lion',
     name: 'Brave Lion',
-    nameAr: 'الأسد الشجاع',
     emoji: '🦁',
     iconName: 'shield',
     bgColor: '#FFF0C2',
@@ -48,7 +44,6 @@ export const AVATARS: AvatarDefinition[] = [
   {
     id: 'spark',
     name: 'High Voltage',
-    nameAr: 'طاقة البرق',
     emoji: '⚡',
     iconName: 'flash',
     bgColor: '#E0F2FE',
@@ -61,7 +56,6 @@ export const AVATARS: AvatarDefinition[] = [
   {
     id: 'owl',
     name: 'Wise Owl',
-    nameAr: 'البومة الحكيمة',
     emoji: '🦉',
     iconName: 'book',
     bgColor: '#EDE9FE',
@@ -72,7 +66,6 @@ export const AVATARS: AvatarDefinition[] = [
   {
     id: 'rocket',
     name: 'Rocket Pioneer',
-    nameAr: 'رائد الفضاء',
     emoji: '🚀',
     iconName: 'rocket',
     bgColor: '#FCE7F3',
@@ -83,7 +76,6 @@ export const AVATARS: AvatarDefinition[] = [
   {
     id: 'crown',
     name: 'Royal Monarch',
-    nameAr: 'التاج الملكي',
     emoji: '👑',
     iconName: 'trophy',
     bgColor: '#FEF3C7',
@@ -94,7 +86,6 @@ export const AVATARS: AvatarDefinition[] = [
   {
     id: 'dragon',
     name: 'Blazing Dragon',
-    nameAr: 'التنين الأسطوري',
     emoji: '🐉',
     iconName: 'flame',
     bgColor: '#FFEDD5',
@@ -105,7 +96,6 @@ export const AVATARS: AvatarDefinition[] = [
   {
     id: 'cosmos',
     name: 'Cosmic Sage',
-    nameAr: 'حكيم الكون',
     emoji: '🌌',
     iconName: 'planet',
     bgColor: '#DDD6FE',
@@ -124,4 +114,3 @@ export function isAvatarUnlocked(avatarId: string, currentTotalXP: number): bool
   const avatar = getAvatarById(avatarId);
   return (currentTotalXP || 0) >= avatar.requiredXP;
 }
-

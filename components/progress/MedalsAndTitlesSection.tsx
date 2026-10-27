@@ -1,35 +1,34 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { THEME } from '@/constants/theme';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { THEME, useTheme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useXPStore } from '@/store/xp-store';
 import { useAppStore } from '@/store/app-store';
-import { calculateLevelInfo, getMedalsWithStatus, LEVEL_TITLES_AR } from '@/constants/xp-rules';
+import { calculateLevelInfo, getMedalsWithStatus } from '@/constants/xp-rules';
 import { AVATARS, getAvatarById, isAvatarUnlocked } from '@/constants/avatars';
 
 export const MedalsAndTitlesSection: React.FC = () => {
+  const { colors, isDark } = useTheme();
   const totalXP = useXPStore((s) => s.totalXP);
   const currentAvatarId = useAppStore((s) => s.settings.avatarId);
   const setAvatarId = useAppStore((s) => s.setAvatarId);
 
   const levelInfo = calculateLevelInfo(totalXP);
-  const titleAr = LEVEL_TITLES_AR[Math.min(10, levelInfo.level)] || 'المخطط البارع';
   const medals = getMedalsWithStatus(totalXP);
-  const equippedAvatar = getAvatarById(currentAvatarId);
 
   return (
     <View style={styles.container}>
       {/* 1. Current Rank Title & Insignia Banner */}
-      <View style={styles.rankBanner}>
+      <View style={[styles.rankBanner, { backgroundColor: colors.lavender }]}>
         <View style={styles.rankBadgeRow}>
-          <View style={styles.rankIconCircle}>
+          <View style={[styles.rankIconCircle, { backgroundColor: colors.surface }]}>
             <Ionicons name="ribbon" size={24} color="#12131C" />
           </View>
           <View style={styles.rankTextWrap}>
-            <Text style={styles.rankHeaderTag}>CURRENT HONORARY RANK</Text>
-            <Text style={styles.rankTitleAr}>{titleAr}</Text>
-            <Text style={styles.rankTitleEn}>
-              {levelInfo.title} • Level {levelInfo.level}
+            <Text style={styles.rankHeaderTag}>CURRENT HONORARY TITLE</Text>
+            <Text style={styles.rankTitleEn}>{levelInfo.title}</Text>
+            <Text style={styles.rankLevelSub}>
+              Level {levelInfo.level} • {levelInfo.progressPercent}% to next rank
             </Text>
           </View>
         </View>
@@ -40,50 +39,56 @@ export const MedalsAndTitlesSection: React.FC = () => {
         </View>
       </View>
 
-      {/* 2. Medals & Insignias (نياشين وأوسمة الإنجاز) */}
-      <View style={styles.sectionCard}>
+      {/* 2. Medals & Insignias */}
+      <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <View style={styles.sectionHeader}>
           <View style={styles.headerLeft}>
-            <Ionicons name="medal-outline" size={20} color="#12131C" />
-            <Text style={styles.sectionTitle}>Medals & Insignias</Text>
+            <Ionicons name="medal-outline" size={20} color={colors.text} />
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Medals & Insignias</Text>
           </View>
-          <Text style={styles.sectionSubTitle}>نياشين الشرف التراكمية</Text>
+          <Text style={[styles.sectionSubTitle, { color: colors.textMuted }]}>Milestone Honors</Text>
         </View>
 
         <View style={styles.medalsList}>
           {medals.map((medal) => (
             <View
               key={medal.id}
-              style={[styles.medalRow, medal.isUnlocked ? styles.medalRowUnlocked : styles.medalRowLocked]}
+              style={[
+                styles.medalRow,
+                { borderColor: colors.border },
+                medal.isUnlocked
+                  ? [styles.medalRowUnlocked, { backgroundColor: colors.surfaceSecondary }]
+                  : [styles.medalRowLocked, { backgroundColor: isDark ? '#141622' : '#F3F4F6' }],
+              ]}
             >
-              <View style={[styles.medalIconCircle, { backgroundColor: medal.isUnlocked ? medal.color : '#E5E7EB' }]}>
+              <View style={[styles.medalIconCircle, { backgroundColor: medal.isUnlocked ? medal.color : colors.border }]}>
                 <Ionicons
                   name={medal.icon as any}
                   size={20}
-                  color={medal.isUnlocked ? '#FFFFFF' : '#9CA3AF'}
+                  color={medal.isUnlocked ? '#FFFFFF' : colors.textMuted}
                 />
               </View>
 
               <View style={styles.medalInfoCol}>
                 <View style={styles.medalTitleRow}>
-                  <Text style={[styles.medalTitle, !medal.isUnlocked && styles.textMuted]}>
-                    {medal.titleAr}
+                  <Text style={[styles.medalTitle, { color: colors.text }, !medal.isUnlocked && { color: colors.textMuted }]}>
+                    {medal.title}
                   </Text>
                   {medal.isUnlocked ? (
                     <View style={styles.unlockedBadge}>
                       <Ionicons name="checkmark-circle" size={14} color="#10B981" />
-                      <Text style={styles.unlockedText}>Acquired</Text>
+                      <Text style={styles.unlockedText}>Earned</Text>
                     </View>
                   ) : (
-                    <Text style={styles.remainingText}>{medal.remainingXP} XP needed</Text>
+                    <Text style={[styles.remainingText, { color: colors.textMuted }]}>{medal.remainingXP} XP needed</Text>
                   )}
                 </View>
 
-                <Text style={styles.medalDesc}>{medal.descriptionAr}</Text>
+                <Text style={[styles.medalDesc, { color: colors.textSecondary }]}>{medal.description}</Text>
 
                 {!medal.isUnlocked && (
-                  <View style={styles.medalProgressBar}>
-                    <View style={[styles.medalProgressFill, { width: `${medal.progress}%` }]} />
+                  <View style={[styles.medalProgressBar, { backgroundColor: colors.border }]}>
+                    <View style={[styles.medalProgressFill, { width: `${medal.progress}%`, backgroundColor: colors.lavender }]} />
                   </View>
                 )}
               </View>
@@ -92,17 +97,17 @@ export const MedalsAndTitlesSection: React.FC = () => {
         </View>
       </View>
 
-      {/* 3. Unlockable Avatars Gallery (أفاتارات تفتح بالـ XP) */}
-      <View style={styles.sectionCard}>
+      {/* 3. Unlockable Avatars Gallery */}
+      <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <View style={styles.sectionHeader}>
           <View style={styles.headerLeft}>
-            <Ionicons name="people-outline" size={20} color="#12131C" />
-            <Text style={styles.sectionTitle}>Avatar Collection</Text>
+            <Ionicons name="people-outline" size={20} color={colors.text} />
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Avatar Collection</Text>
           </View>
-          <Text style={styles.sectionSubTitle}>أفاتارات تفتح بالـ XP</Text>
+          <Text style={[styles.sectionSubTitle, { color: colors.textMuted }]}>XP Unlocks</Text>
         </View>
 
-        <Text style={styles.galleryInstruction}>
+        <Text style={[styles.galleryInstruction, { color: colors.textSecondary }]}>
           Equip any unlocked persona as your active profile avatar.
         </Text>
 
@@ -160,7 +165,6 @@ const styles = StyleSheet.create({
     marginVertical: THEME.spacing.sm,
   },
   rankBanner: {
-    backgroundColor: '#C8B6FF',
     borderRadius: 26,
     padding: 20,
     marginBottom: THEME.spacing.md,
@@ -179,7 +183,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     ...THEME.shadows.subtle,
@@ -193,13 +196,13 @@ const styles = StyleSheet.create({
     color: '#3B2771',
     letterSpacing: 0.5,
   },
-  rankTitleAr: {
-    fontSize: 18,
+  rankTitleEn: {
+    fontSize: 20,
     fontWeight: '800',
     color: '#12131C',
     marginTop: 2,
   },
-  rankTitleEn: {
+  rankLevelSub: {
     fontSize: 12,
     fontWeight: '600',
     color: 'rgba(18, 19, 28, 0.7)',
@@ -219,12 +222,10 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   sectionCard: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 26,
     padding: 20,
     marginBottom: THEME.spacing.md,
     borderWidth: 1,
-    borderColor: '#ECEEF5',
     ...THEME.shadows.card,
   },
   sectionHeader: {
@@ -241,17 +242,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#12131C',
     letterSpacing: -0.3,
   },
   sectionSubTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#8E92A4',
   },
   galleryInstruction: {
     fontSize: 13,
-    color: '#6B7082',
     marginBottom: 14,
   },
   medalsList: {
@@ -265,13 +263,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 12,
   },
-  medalRowUnlocked: {
-    backgroundColor: '#F9FAFC',
-    borderColor: '#E5E7EB',
-  },
+  medalRowUnlocked: {},
   medalRowLocked: {
-    backgroundColor: '#F3F4F6',
-    borderColor: '#E5E7EB',
     opacity: 0.8,
   },
   medalIconCircle: {
@@ -293,10 +286,6 @@ const styles = StyleSheet.create({
   medalTitle: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#12131C',
-  },
-  textMuted: {
-    color: '#6B7280',
   },
   unlockedBadge: {
     flexDirection: 'row',
@@ -311,24 +300,20 @@ const styles = StyleSheet.create({
   remainingText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#8E92A4',
   },
   medalDesc: {
     fontSize: 12,
-    color: '#6B7082',
     marginTop: 2,
     lineHeight: 16,
   },
   medalProgressBar: {
     height: 5,
-    backgroundColor: '#E5E7EB',
     borderRadius: 3,
     marginTop: 8,
     overflow: 'hidden',
   },
   medalProgressFill: {
     height: '100%',
-    backgroundColor: '#C8B6FF',
     borderRadius: 3,
   },
   avatarGrid: {
@@ -408,4 +393,3 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
 });
-

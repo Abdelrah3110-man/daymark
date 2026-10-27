@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Goal } from '@/types/app';
 import { Ionicons } from '@expo/vector-icons';
 import { useGoalStore } from '@/store/goal-store';
@@ -11,6 +11,7 @@ interface GoalCardProps {
 }
 
 export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
+  const { colors, isDark } = useTheme();
   const toggleMilestone = useGoalStore((s) => s.toggleMilestone);
 
   const totalMilestones = goal.milestones.length;
@@ -19,22 +20,22 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
     totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0;
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={styles.header}>
         <View style={styles.titleCol}>
           <View style={styles.badgeRow}>
-            <View style={styles.categoryBadge}>
-              <Text style={styles.categoryText}>{goal.category}</Text>
+            <View style={[styles.categoryBadge, { backgroundColor: colors.surfaceSecondary }]}>
+              <Text style={[styles.categoryText, { color: colors.textSecondary }]}>{goal.category}</Text>
             </View>
             {goal.targetDate && (
               <View style={styles.dateBadge}>
-                <Ionicons name="calendar-outline" size={11} color={THEME.colors.textMuted} />
-                <Text style={styles.dateText}>{goal.targetDate}</Text>
+                <Ionicons name="calendar-outline" size={11} color={colors.textMuted} />
+                <Text style={[styles.dateText, { color: colors.textMuted }]}>{goal.targetDate}</Text>
               </View>
             )}
           </View>
-          <Text style={styles.title}>{goal.title}</Text>
-          {goal.description ? <Text style={styles.description}>{goal.description}</Text> : null}
+          <Text style={[styles.title, { color: colors.text }]}>{goal.title}</Text>
+          {goal.description ? <Text style={[styles.description, { color: colors.textSecondary }]}>{goal.description}</Text> : null}
         </View>
 
         <TouchableOpacity
@@ -42,21 +43,21 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
           onPress={() => onEdit(goal)}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="ellipsis-horizontal" size={18} color={THEME.colors.text} />
+          <Ionicons name="ellipsis-horizontal" size={18} color={colors.text} />
         </TouchableOpacity>
       </View>
 
       {/* Progress Bar */}
       {totalMilestones > 0 && (
-        <View style={styles.progressWrap}>
+        <View style={[styles.progressWrap, { borderTopColor: colors.borderSubtle }]}>
           <View style={styles.progressHeader}>
-            <Text style={styles.progressLabel}>Milestones</Text>
-            <Text style={styles.progressValue}>
+            <Text style={[styles.progressLabel, { color: colors.textMuted }]}>Milestones</Text>
+            <Text style={[styles.progressValue, { color: colors.text }]}>
               {completedMilestones}/{totalMilestones} ({progressPct}%)
             </Text>
           </View>
-          <View style={styles.track}>
-            <View style={[styles.fill, { width: `${progressPct}%` }]} />
+          <View style={[styles.track, { backgroundColor: colors.surfaceSecondary }]}>
+            <View style={[styles.fill, { width: `${progressPct}%`, backgroundColor: colors.lavender }]} />
           </View>
 
           {/* Milestones checklist */}
@@ -68,10 +69,23 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit }) => {
                 onPress={() => toggleMilestone(goal.id, ms.id)}
                 activeOpacity={0.7}
               >
-                <View style={[styles.checkbox, ms.completed && styles.checkboxChecked]}>
-                  {ms.completed && <Ionicons name="checkmark" size={13} color={THEME.colors.textInverse} />}
+                <View
+                  style={[
+                    styles.checkbox,
+                    { borderColor: colors.textMuted },
+                    ms.completed && { backgroundColor: colors.lavender, borderColor: colors.lavender },
+                  ]}
+                >
+                  {ms.completed && <Ionicons name="checkmark" size={13} color="#FFFFFF" />}
                 </View>
-                <Text style={[styles.milestoneTitle, ms.completed && styles.milestoneDone]} numberOfLines={1}>
+                <Text
+                  style={[
+                    styles.milestoneTitle,
+                    { color: colors.text },
+                    ms.completed && { color: colors.textMuted, textDecorationLine: 'line-through' },
+                  ]}
+                  numberOfLines={1}
+                >
                   {ms.title}
                 </Text>
               </TouchableOpacity>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { THEME } from '@/constants/theme';
+import { THEME, useTheme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useTaskStore } from '@/store/task-store';
 import { useFocusStore } from '@/store/focus-store';
@@ -11,6 +11,7 @@ import { FocusReflectionModal } from '@/components/focus/FocusReflectionModal';
 
 export default function FocusScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const taskId = Array.isArray(id) ? id[0] : id;
 
@@ -33,18 +34,18 @@ export default function FocusScreen() {
   }, [taskId]);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right', 'bottom']}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right', 'bottom']}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.borderSubtle }]}>
         <TouchableOpacity
           style={styles.closeBtn}
           onPress={() => router.back()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="close" size={24} color={THEME.colors.text} />
+          <Ionicons name="close" size={24} color={colors.text} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Deep Focus</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Deep Focus</Text>
 
         <View style={{ width: 36 }} />
       </View>
