@@ -161,8 +161,14 @@ export interface XPTransaction {
   createdAt: string; // ISO
 }
 
+export type ThemePreference = 'light' | 'dark' | 'system';
+
 export interface UserSettings {
   displayName: string;
+  birthDate?: string; // YYYY-MM-DD
+  avatarId: string; // ID of selected avatar
+  isOnboarded: boolean;
+  themePreference: ThemePreference;
   weekStartDay: 0 | 1 | 6; // 0=Sunday, 1=Monday, 6=Saturday
   defaultFocusMinutes: number;
   dailyAvailabilityMinutes: number; // default 480 mins (8 hours)

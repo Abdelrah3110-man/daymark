@@ -35,6 +35,126 @@ export const LEVEL_TITLES: { [level: number]: string } = {
   10: 'Legendary Sovereign',
 };
 
+export const LEVEL_TITLES_AR: { [level: number]: string } = {
+  1: 'مبتدئ الإنتاجية',
+  2: 'المنجز المتدرب',
+  3: 'الممارس المنضبط',
+  4: 'خبير التخطيط',
+  5: 'حرفي العادات',
+  6: 'متخصص التركيز العميق',
+  7: 'معمار الأسابيع',
+  8: 'المخطط البارع',
+  9: 'بطل ديمارك',
+  10: 'الأسطورة الخالدة',
+};
+
+export interface MedalDefinition {
+  id: string;
+  title: string;
+  titleAr: string;
+  requiredXP: number;
+  icon: string;
+  color: string;
+  tier: 'bronze' | 'iron' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'mythic';
+  description: string;
+  descriptionAr: string;
+}
+
+export const MEDALS: MedalDefinition[] = [
+  {
+    id: 'medal_bronze',
+    title: 'Bronze Initiate',
+    titleAr: 'وسام البداية البرونزي',
+    requiredXP: 50,
+    icon: 'medal',
+    color: '#CD7F32',
+    tier: 'bronze',
+    description: 'Awarded upon reaching 50 cumulative XP.',
+    descriptionAr: 'يُمنح عند جمع أول 50 نقطة خبرة تراكمية.',
+  },
+  {
+    id: 'medal_iron',
+    title: 'Iron Discipline',
+    titleAr: 'نوط الانضباط الحديدي',
+    requiredXP: 150,
+    icon: 'shield-checkmark',
+    color: '#708090',
+    tier: 'iron',
+    description: 'Awarded upon reaching 150 cumulative XP.',
+    descriptionAr: 'يُمنح للثبات في تنفيذ الخطط اليومية عند 150 XP.',
+  },
+  {
+    id: 'medal_silver',
+    title: 'Silver Achiever',
+    titleAr: 'وسام الإنجاز الفضي',
+    requiredXP: 300,
+    icon: 'trophy',
+    color: '#A0AEC0',
+    tier: 'silver',
+    description: 'Awarded upon reaching 300 cumulative XP.',
+    descriptionAr: 'تقدير للإنتاجية العالية وإتمام المهام بنجاح.',
+  },
+  {
+    id: 'medal_gold',
+    title: 'Gold Strategist',
+    titleAr: 'نيشان التخطيط الذهبي',
+    requiredXP: 600,
+    icon: 'ribbon',
+    color: '#EAB308',
+    tier: 'gold',
+    description: 'Awarded upon reaching 600 cumulative XP.',
+    descriptionAr: 'وسام الشرف للتفوق في التخطيط الأسبوعي وإتقان العادات.',
+  },
+  {
+    id: 'medal_platinum',
+    title: 'Platinum Champion',
+    titleAr: 'وسام البطل البلاتيني',
+    requiredXP: 1000,
+    icon: 'sparkles',
+    color: '#CBD5E1',
+    tier: 'platinum',
+    description: 'Awarded upon reaching 1,000 cumulative XP.',
+    descriptionAr: 'يُمنح لنخبة المستخدمين الذين بلغوا 1,000 نقطة خبرة.',
+  },
+  {
+    id: 'medal_diamond',
+    title: 'Diamond Master',
+    titleAr: 'نيشان الإتقان الماسي',
+    requiredXP: 1800,
+    icon: 'diamond',
+    color: '#38BDF8',
+    tier: 'diamond',
+    description: 'Awarded upon reaching 1,800 cumulative XP.',
+    descriptionAr: 'إتقان استثنائي وعزيمة لا تلين في مواجهة أكبر المشاريع.',
+  },
+  {
+    id: 'medal_mythic',
+    title: 'Mythic Sovereign',
+    titleAr: 'قلادة السيادة الأسطورية',
+    requiredXP: 3000,
+    icon: 'star',
+    color: '#A855F7',
+    tier: 'mythic',
+    description: 'Awarded upon reaching 3,000 cumulative XP.',
+    descriptionAr: 'أعلى مرتبة شرفية في DAYMARK للسيطرة الكاملة على الوقت.',
+  },
+];
+
+export function getMedalsWithStatus(totalXP: number) {
+  const safeXP = Math.max(0, totalXP || 0);
+  return MEDALS.map((medal) => {
+    const isUnlocked = safeXP >= medal.requiredXP;
+    const progress = Math.min(100, Math.floor((safeXP / medal.requiredXP) * 100));
+    const remainingXP = Math.max(0, medal.requiredXP - safeXP);
+    return {
+      ...medal,
+      isUnlocked,
+      progress,
+      remainingXP,
+    };
+  });
+}
+
 /**
  * Returns XP threshold required to reach a specific level.
  * Level 1: 0 XP

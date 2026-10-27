@@ -4,7 +4,10 @@ import {
   calculateLevelInfo,
   getXpRequiredForLevel,
   XP_REWARDS,
+  getMedalsWithStatus,
+  MEDALS,
 } from '../constants/xp-rules';
+import { isAvatarUnlocked, getAvatarById, AVATARS } from '../constants/avatars';
 
 test('getXpRequiredForLevel increases smoothly', () => {
   assert.equal(getXpRequiredForLevel(1), 0);
@@ -38,5 +41,37 @@ test('XP rewards match product rules', () => {
   assert.equal(XP_REWARDS.DAILY_PRIORITY_ALL_COMPLETED, 10);
   assert.equal(XP_REWARDS.WEEKLY_REVIEW_COMPLETED, 15);
   assert.equal(XP_REWARDS.HABIT_COMPLETED, 5);
+});
+
+test('getMedalsWithStatus unlocks medals according to cumulative XP thresholds', () => {
+  // At 0 XP: all locked
+  const atZero = getMedalsWithStatus(0);
+  assert.equal(atZero.every((m) => !m.isUnlocked), true);
+
+  // At 50 XP: Bronze Initiate unlocked
+  const atFifty = getMedalsWithStatus(50);
+  assert.equal(atFifty.find((m) => m.id === 'medal_bronze')?.isUnlocked, true);
+  assert.equal(atFifty.find((m) => m.id === 'medal_iron')?.isUnlocked, false);
+
+  // At 650 XP: Bronze, Iron, Silver, Gold unlocked; Platinum locked
+  const at650 = getMedalsWithStatus(650);
+  assert.equal(at650.find((m) => m.id === 'medal_gold')?.isUnlocked, true);
+  assert.equal(at650.find((m) => m.id === 'medal_platinum')?.isUnlocked, false);
+});
+
+test('Avatar system correctly handles starter vs XP-locked avatars', () => {
+  // Starter avatars are unlocked at 0 XP
+  assert.equal(isAvatarUnlocked('fox', 0), true);
+  assert.equal(isAvatarUnlocked('panda', 0), true);
+  assert.equal(isAvatarUnlocked('lion', 0), true);
+  assert.equal(isAvatarUnlocked('spark', 0), true);
+
+  // XP-locked avatars
+  assert.equal(isAvatarUnlocked('owl', 50), false);
+  assert.equal(isAvatarUnlocked('owl', 100), true);
+  assert.equal(isAvatarUnlocked('rocket', 200), false);
+  assert.equal(isAvatarUnlocked('rocket', 300), true);
+  assert.equal(isAvatarUnlocked('cosmos', 2499), false);
+  assert.equal(isAvatarUnlocked('cosmos', 2500), true);
 });
 

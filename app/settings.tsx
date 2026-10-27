@@ -14,23 +14,49 @@ import { useRouter } from 'expo-router';
 import { THEME } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStore } from '@/store/app-store';
+import { useXPStore } from '@/store/xp-store';
 import { exportAllDaymarkData } from '@/services/persistence';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { AVATARS, getAvatarById, isAvatarUnlocked } from '@/constants/avatars';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const settings = useAppStore((s) => s.settings);
   const updateSettings = useAppStore((s) => s.updateSettings);
   const resetAllData = useAppStore((s) => s.resetAllApplicationData);
+  const totalXP = useXPStore((s) => s.totalXP);
 
   const [displayName, setDisplayName] = useState(settings.displayName || '');
+  const [birthDate, setBirthDate] = useState(settings.birthDate || '');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [saveFeedback, setSaveFeedback] = useState('');
 
+  const currentAvatar = getAvatarById(settings.avatarId);
+
   const handleSaveProfile = () => {
-    updateSettings({ displayName: displayName.trim() });
-    setSaveFeedback('Settings saved successfully.');
+    updateSettings({
+      displayName: displayName.trim(),
+      birthDate: birthDate.trim(),
+    });
+    setSaveFeedback('Profile saved successfully.');
+    setTimeout(() => setSaveFeedback(''), 3000);
+  };
+
+  const handleThemeChange = (theme: 'light' | 'dark') => {
+    updateSettings({ themePreference: theme });
+    setSaveFeedback(`Theme set to ${theme === 'dark' ? 'Dark' : 'Light'} mode.`);
+    setTimeout(() => setSaveFeedback(''), 3000);
+  };
+
+  const handleSelectAvatar = (avatarId: string) => {
+    if (!isAvatarUnlocked(avatarId, totalXP)) {
+      const target = getAvatarById(avatarId);
+      Alert.alert('Avatar Locked', `Requires ${target.requiredXP} XP to unlock. Keep completing tasks to unlock it!`);
+      return;
+    }
+    updateSettings({ avatarId });
+    setSaveFeedback('Avatar updated.');
     setTimeout(() => setSaveFeedback(''), 3000);
   };
 
@@ -89,17 +115,103 @@ export default function SettingsScreen() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         {/* Profile Card */}
         <View style={styles.card}>
-          <Text style={styles.sectionHeading}>PROFILE</Text>
-          <Text style={styles.label}>Display Name (Optional)</Text>
+          <Text style={styles.sectionHeading}>PROFILE & IDENTITY</Text>
+
+          {/* Current Avatar Preview */}
+          <View style={styles.avatarRow}>
+            <View style={[styles.avatarBadge, { backgroundColor: currentAvatar.bgColor }]}>
+              <Text style={styles.avatarEmojiLarge}>{currentAvatar.emoji}</Text>
+            </View>
+            <View style={styles.avatarTextCol}>
+              <Text style={styles.avatarTitle}>{currentAvatar.name}</Text>
+              <Text style={styles.avatarSubtitle}>{currentAvatar.title}</Text>
+            </View>
+          </View>
+
+          {/* Avatars Selector */}
+          <Text style={styles.label}>Choose Avatar Persona</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.avatarScroll}>
+            {AVATARS.map((a) => {
+              const unlocked = isAvatarUnlocked(a.id, totalXP);
+              const isSelected = settings.avatarId === a.id;
+              return (
+                <TouchableOpacity
+                  key={a.id}
+                  style={[
+                    styles.avatarMiniCard,
+                    { backgroundColor: a.bgColor },
+                    isSelected && styles.avatarMiniCardSelected,
+                    !unlocked && styles.avatarMiniCardLocked,
+                  ]}
+                  onPress={() => handleSelectAvatar(a.id)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.avatarMiniEmoji}>{a.emoji}</Text>
+                  <Text style={styles.avatarMiniName} numberOfLines={1}>{a.name}</Text>
+                  {!unlocked ? (
+                    <View style={styles.lockBadgeMini}>
+                      <Ionicons name="lock-closed" size={10} color="#6B7280" />
+                      <Text style={styles.lockTextMini}>{a.requiredXP} XP</Text>
+                    </View>
+                  ) : isSelected ? (
+                    <View style={styles.checkBadgeMini}>
+                      <Ionicons name="checkmark" size={10} color="#FFFFFF" />
+                    </View>
+                  ) : null}
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          <Text style={styles.label}>Display Name</Text>
           <TextInput
             style={styles.input}
-            placeholder="e.g. Alex"
+            placeholder="e.g. Sandra"
             placeholderTextColor={THEME.colors.textLight}
             value={displayName}
             onChangeText={setDisplayName}
             onBlur={handleSaveProfile}
           />
-          <Text style={styles.helpText}>Used to greet you on the home dashboard.</Text>
+
+          <Text style={[styles.label, { marginTop: 12 }]}>Date of Birth (YYYY-MM-DD)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. 1998-05-25"
+            placeholderTextColor={THEME.colors.textLight}
+            value={birthDate}
+            onChangeText={setBirthDate}
+            onBlur={handleSaveProfile}
+          />
+        </View>
+
+        {/* Appearance & Dark Mode */}
+        <View style={styles.card}>
+          <Text style={styles.sectionHeading}>APPEARANCE (DARK MODE)</Text>
+          <Text style={styles.label}>Theme Preference</Text>
+          <View style={styles.pillRow}>
+            {[
+              { label: '☀️ Light', value: 'light' as const },
+              { label: '🌙 Dark', value: 'dark' as const },
+            ].map((item) => (
+              <TouchableOpacity
+                key={item.value}
+                style={[
+                  styles.pill,
+                  settings.themePreference === item.value && styles.pillActive,
+                ]}
+                onPress={() => handleThemeChange(item.value)}
+              >
+                <Text
+                  style={[
+                    styles.pillText,
+                    settings.themePreference === item.value && styles.pillTextActive,
+                  ]}
+                >
+                  {item.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
         {/* Planning Preferences */}
@@ -198,15 +310,16 @@ export default function SettingsScreen() {
         </View>
       </ScrollView>
 
-      {/* Confirmation Dialog */}
+      {/* Confirm Dialog */}
       <ConfirmDialog
         visible={showClearConfirm}
-        title="Clear All Application Data?"
-        message="This will completely erase all your tasks, weekly plans, notes, goals, habits, focus logs, and XP. You will start with a fresh, empty workspace."
-        confirmLabel="Erase Everything"
-        isDestructive
+        title="Reset All Data?"
+        message="This will irrevocably delete all planned tasks, notes, habits, focus sessions, and XP achievements from this device. Are you sure?"
+        confirmLabel="Yes, Clear Everything"
+        cancelLabel="Cancel"
         onConfirm={handleClearAll}
         onCancel={() => setShowClearConfirm(false)}
+        isDestructive
       />
     </SafeAreaView>
   );
@@ -222,10 +335,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: THEME.spacing.lg,
-    paddingVertical: THEME.spacing.sm,
-    backgroundColor: THEME.colors.surface,
+    paddingVertical: THEME.spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: THEME.colors.border,
+    backgroundColor: THEME.colors.surface,
   },
   backBtn: {
     width: 36,
@@ -241,15 +354,15 @@ const styles = StyleSheet.create({
   feedbackBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: THEME.colors.mintLight,
+    backgroundColor: THEME.colors.successLight,
     paddingHorizontal: THEME.spacing.lg,
-    paddingVertical: THEME.spacing.sm,
+    paddingVertical: 10,
     gap: 8,
   },
   feedbackText: {
     ...THEME.typography.caption,
-    fontWeight: '600',
-    color: THEME.colors.mintDark,
+    color: THEME.colors.success,
+    fontWeight: '700',
   },
   scroll: {
     flex: 1,
@@ -257,60 +370,146 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: THEME.spacing.lg,
     paddingBottom: 40,
-    gap: THEME.spacing.md,
   },
   card: {
     backgroundColor: THEME.colors.surface,
-    borderRadius: THEME.borderRadius.lg,
+    borderRadius: 24,
     padding: THEME.spacing.lg,
+    marginBottom: THEME.spacing.md,
     borderWidth: 1,
     borderColor: THEME.colors.border,
     ...THEME.shadows.subtle,
   },
-  dangerCard: {
-    borderColor: THEME.colors.dangerLight,
-    backgroundColor: '#FFF8F8',
-  },
   sectionHeading: {
     ...THEME.typography.micro,
-    fontWeight: '800',
     color: THEME.colors.textMuted,
-    letterSpacing: 0.8,
-    marginBottom: THEME.spacing.sm,
+    fontWeight: '800',
+    marginBottom: THEME.spacing.md,
+    letterSpacing: 0.5,
+  },
+  avatarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 14,
+  },
+  avatarBadge: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    ...THEME.shadows.subtle,
+  },
+  avatarEmojiLarge: {
+    fontSize: 30,
+  },
+  avatarTextCol: {
+    flex: 1,
+  },
+  avatarTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: THEME.colors.text,
+  },
+  avatarSubtitle: {
+    fontSize: 12,
+    color: THEME.colors.textSecondary,
+    marginTop: 2,
+  },
+  avatarScroll: {
+    marginBottom: 16,
+    paddingVertical: 4,
+  },
+  avatarMiniCard: {
+    width: 74,
+    height: 84,
+    borderRadius: 18,
+    padding: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    position: 'relative',
+  },
+  avatarMiniCardSelected: {
+    borderColor: '#12131C',
+    transform: [{ scale: 1.05 }],
+  },
+  avatarMiniCardLocked: {
+    opacity: 0.55,
+  },
+  avatarMiniEmoji: {
+    fontSize: 26,
+    marginBottom: 2,
+  },
+  avatarMiniName: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#12131C',
+  },
+  lockBadgeMini: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 8,
+    marginTop: 2,
+    gap: 2,
+  },
+  lockTextMini: {
+    fontSize: 8,
+    fontWeight: '800',
+    color: '#6B7280',
+  },
+  checkBadgeMini: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#12131C',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   label: {
     ...THEME.typography.caption,
-    fontWeight: '600',
     color: THEME.colors.textSecondary,
+    fontWeight: '700',
     marginBottom: 6,
-    marginTop: THEME.spacing.sm,
   },
   input: {
     backgroundColor: THEME.colors.surfaceSecondary,
-    borderRadius: THEME.borderRadius.sm,
+    borderRadius: THEME.borderRadius.md,
     paddingHorizontal: THEME.spacing.md,
-    paddingVertical: 10,
+    paddingVertical: 12,
     ...THEME.typography.body,
     color: THEME.colors.text,
-  },
-  helpText: {
-    ...THEME.typography.micro,
-    color: THEME.colors.textMuted,
-    marginTop: 4,
+    borderWidth: 1,
+    borderColor: THEME.colors.borderSubtle,
   },
   pillRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+    marginBottom: THEME.spacing.md,
   },
   pill: {
-    paddingHorizontal: 12,
+    paddingHorizontal: THEME.spacing.md,
     paddingVertical: 8,
     borderRadius: THEME.borderRadius.pill,
     backgroundColor: THEME.colors.surfaceSecondary,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   pillActive: {
     backgroundColor: THEME.colors.text,
+    borderColor: THEME.colors.text,
   },
   pillText: {
     ...THEME.typography.caption,
@@ -319,11 +518,12 @@ const styles = StyleSheet.create({
   },
   pillTextActive: {
     color: THEME.colors.textInverse,
+    fontWeight: '700',
   },
   privacyNote: {
     ...THEME.typography.bodySm,
     color: THEME.colors.textSecondary,
-    lineHeight: 18,
+    lineHeight: 20,
     marginBottom: THEME.spacing.md,
   },
   exportBtn: {
@@ -331,19 +531,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: THEME.colors.surfaceSecondary,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: THEME.borderRadius.pill,
-    gap: 6,
+    gap: 8,
   },
   exportBtnText: {
-    ...THEME.typography.caption,
+    ...THEME.typography.bodySm,
     fontWeight: '700',
     color: THEME.colors.text,
+  },
+  dangerCard: {
+    borderColor: THEME.colors.dangerLight,
   },
   dangerNote: {
     ...THEME.typography.bodySm,
     color: THEME.colors.textSecondary,
-    lineHeight: 18,
+    lineHeight: 20,
     marginBottom: THEME.spacing.md,
   },
   clearBtn: {
@@ -351,14 +554,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: THEME.colors.danger,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: THEME.borderRadius.pill,
-    gap: 6,
+    gap: 8,
   },
   clearBtnText: {
-    ...THEME.typography.caption,
+    ...THEME.typography.bodySm,
     fontWeight: '700',
     color: THEME.colors.textInverse,
   },
 });
-

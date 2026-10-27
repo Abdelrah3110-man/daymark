@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { UserSettings } from '@/types/app';
+import { UserSettings, ThemePreference } from '@/types/app';
 import { STORAGE_KEYS, saveItem, loadItem, clearAllDaymarkData } from '@/services/persistence';
 import { getTodayKey, getWeekStartDate } from '@/utils/dates';
+import { setAppThemeColors } from '@/constants/theme';
 import { useTaskStore } from './task-store';
 import { usePlanningStore } from './planning-store';
 import { useGoalStore } from './goal-store';
@@ -12,6 +13,10 @@ import { useXPStore } from './xp-store';
 
 const DEFAULT_SETTINGS: UserSettings = {
   displayName: '',
+  birthDate: '',
+  avatarId: 'fox',
+  isOnboarded: false,
+  themePreference: 'light',
   weekStartDay: 0, // Sunday default
   defaultFocusMinutes: 25,
   dailyAvailabilityMinutes: 480, // 8 hours default
@@ -29,6 +34,9 @@ interface AppState {
 
   initApp: () => Promise<void>;
   updateSettings: (updates: Partial<UserSettings>) => void;
+  completeOnboarding: (name: string, birthDate: string, avatarId: string) => void;
+  setThemePreference: (theme: ThemePreference) => void;
+  setAvatarId: (avatarId: string) => void;
   setActiveWeekStart: (weekStart: string) => void;
   setDailyChallenge: (challengeText: string) => void;
   toggleDailyChallengeCompleted: () => void;
@@ -66,7 +74,12 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       const weekStart = getWeekStartDate(new Date(), savedSettings.weekStartDay);
 
+      // Apply saved theme
+      const isDark = savedSettings.themePreference === 'dark';
+      setAppThemeColors(isDark);
+
       const updatedSettings: UserSettings = {
+        ...DEFAULT_SETTINGS,
         ...savedSettings,
         lastActiveDate: todayKey,
       };
@@ -89,6 +102,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     const current = get().settings;
     const updated = { ...current, ...updates };
 
+    // If theme changed, apply colors
+    if (updates.themePreference !== undefined) {
+      setAppThemeColors(updates.themePreference === 'dark');
+    }
+
     // If weekStartDay changed, recalculate activeWeekStart
     let newActiveWeek = get().activeWeekStart;
     if (updates.weekStartDay !== undefined && updates.weekStartDay !== current.weekStartDay) {
@@ -97,6 +115,23 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     set({ settings: updated, activeWeekStart: newActiveWeek });
     saveItem(STORAGE_KEYS.SETTINGS, updated);
+  },
+
+  completeOnboarding: (name, birthDate, avatarId) => {
+    get().updateSettings({
+      displayName: name.trim(),
+      birthDate: birthDate.trim(),
+      avatarId: avatarId,
+      isOnboarded: true,
+    });
+  },
+
+  setThemePreference: (theme) => {
+    get().updateSettings({ themePreference: theme });
+  },
+
+  setAvatarId: (avatarId) => {
+    get().updateSettings({ avatarId });
   },
 
   setActiveWeekStart: (weekStart) => {

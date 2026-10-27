@@ -14,10 +14,13 @@ import { WeeklyDayPicker } from '@/components/home/WeeklyDayPicker';
 import { YourPlanBentoGrid } from '@/components/home/YourPlanBentoGrid';
 import { WeeklySummaryCard } from '@/components/home/WeeklySummaryCard';
 import { TaskEditor } from '@/components/tasks/TaskEditor';
+import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
+import { getAvatarById } from '@/constants/avatars';
 
 export default function HomeScreen() {
   const router = useRouter();
   const settings = useAppStore((s) => s.settings);
+  const isHydrated = useAppStore((s) => s.isHydrated);
   const daysSinceLastActive = useAppStore((s) => s.daysSinceLastActive);
   const tasks = useTaskStore((s) => s.tasks);
 
@@ -45,9 +48,10 @@ export default function HomeScreen() {
     setTimeout(() => setRefreshing(false), 300);
   };
 
+  const currentAvatar = getAvatarById(settings.avatarId);
   const displayName = settings.displayName && settings.displayName.trim()
     ? settings.displayName.trim()
-    : 'Sandra';
+    : 'Planner';
 
   const todayDisplay = `Today ${formatDayShort(todayKey)}`;
 
@@ -57,14 +61,12 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View style={styles.headerProfileRow}>
           <TouchableOpacity
-            style={styles.avatarButton}
+            style={[styles.avatarButton, { backgroundColor: currentAvatar.bgColor }]}
             onPress={() => router.push('/settings')}
             activeOpacity={0.8}
             accessibilityLabel="Profile settings"
           >
-            <View style={styles.avatarInner}>
-              <Ionicons name="person" size={20} color="#12131C" />
-            </View>
+            <Text style={styles.avatarEmojiText}>{currentAvatar.emoji}</Text>
           </TouchableOpacity>
 
           <View style={styles.headerTextWrap}>
@@ -135,6 +137,11 @@ export default function HomeScreen() {
           defaultDate={selectedDate}
         />
       )}
+
+      {/* First-time User Onboarding Modal */}
+      {isHydrated && !settings.isOnboarded && (
+        <OnboardingModal visible={!settings.isOnboarded} />
+      )}
     </SafeAreaView>
   );
 }
@@ -161,20 +168,14 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFE3D1',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#FFFFFF',
     ...THEME.shadows.subtle,
   },
-  avatarInner: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#FFD4B8',
-    alignItems: 'center',
-    justifyContent: 'center',
+  avatarEmojiText: {
+    fontSize: 22,
   },
   headerTextWrap: {
     justifyContent: 'center',

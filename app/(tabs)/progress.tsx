@@ -13,6 +13,7 @@ import { calculateHonestStats } from '@/utils/statistics';
 import { XPProgressCard } from '@/components/progress/XPProgressCard';
 import { MetricsGrid } from '@/components/progress/MetricsGrid';
 import { AchievementsSection } from '@/components/progress/AchievementsSection';
+import { MedalsAndTitlesSection } from '@/components/progress/MedalsAndTitlesSection';
 import { formatWeekRange } from '@/utils/dates';
 
 export default function ProgressScreen() {
@@ -74,6 +75,9 @@ export default function ProgressScreen() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         {/* XP Level & Progression Card */}
         <XPProgressCard />
+
+        {/* Honorary Titles, Medals & Unlockable Avatars Gallery */}
+        <MedalsAndTitlesSection />
 
         {/* Honest Metrics Grid */}
         <MetricsGrid stats={stats} />
