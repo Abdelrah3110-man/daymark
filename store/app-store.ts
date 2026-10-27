@@ -78,9 +78,12 @@ export const useAppStore = create<AppState>((set, get) => ({
       const isDark = savedSettings.themePreference === 'dark';
       setAppThemeColors(isDark);
 
+      const isUserOnboarded = Boolean(savedSettings?.isOnboarded && savedSettings?.displayName && savedSettings?.displayName.trim());
+
       const updatedSettings: UserSettings = {
         ...DEFAULT_SETTINGS,
         ...savedSettings,
+        isOnboarded: isUserOnboarded,
         lastActiveDate: todayKey,
       };
 

@@ -182,6 +182,17 @@ export default function SettingsScreen() {
             onChangeText={setBirthDate}
             onBlur={handleSaveProfile}
           />
+
+          <TouchableOpacity
+            style={styles.reopenOnboardingBtn}
+            onPress={() => router.push('/onboarding')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="sparkles" size={16} color="#432C81" />
+            <Text style={styles.reopenOnboardingText}>
+              فتح شاشة التسجيل واختيار الأفاتار (Onboarding Setup)
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Appearance & Dark Mode */}
@@ -492,6 +503,24 @@ const styles = StyleSheet.create({
     color: THEME.colors.text,
     borderWidth: 1,
     borderColor: THEME.colors.borderSubtle,
+  },
+  reopenOnboardingBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EFEAFF',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 18,
+    marginTop: 14,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#D8CEFC',
+  },
+  reopenOnboardingText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#432C81',
   },
   pillRow: {
     flexDirection: 'row',

@@ -14,7 +14,6 @@ import { WeeklyDayPicker } from '@/components/home/WeeklyDayPicker';
 import { YourPlanBentoGrid } from '@/components/home/YourPlanBentoGrid';
 import { WeeklySummaryCard } from '@/components/home/WeeklySummaryCard';
 import { TaskEditor } from '@/components/tasks/TaskEditor';
-import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
 import { getAvatarById } from '@/constants/avatars';
 
 export default function HomeScreen() {
@@ -136,11 +135,6 @@ export default function HomeScreen() {
           onClose={() => setTaskEditorVisible(false)}
           defaultDate={selectedDate}
         />
-      )}
-
-      {/* First-time User Onboarding Modal */}
-      {isHydrated && !settings.isOnboarded && (
-        <OnboardingModal visible={!settings.isOnboarded} />
       )}
     </SafeAreaView>
   );

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAppStore } from '@/store/app-store';
@@ -8,11 +8,25 @@ import { THEME } from '@/constants/theme';
 
 export default function RootLayout() {
   const isHydrated = useAppStore((s) => s.isHydrated);
+  const settings = useAppStore((s) => s.settings);
   const initApp = useAppStore((s) => s.initApp);
+  const router = useRouter();
+  const segments = useSegments();
 
   useEffect(() => {
     initApp();
   }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    const inOnboarding = segments[0] === 'onboarding';
+    const isUserOnboarded = Boolean(settings.isOnboarded && settings.displayName && settings.displayName.trim());
+
+    if (!isUserOnboarded && !inOnboarding) {
+      router.replace('/onboarding');
+    }
+  }, [isHydrated, settings.isOnboarded, settings.displayName, segments]);
 
   if (!isHydrated) {
     return (
@@ -24,7 +38,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
+      <StatusBar style={settings.themePreference === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -32,6 +46,7 @@ export default function RootLayout() {
           animation: 'fade_from_bottom',
         }}
       >
+        <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
           name="daily/[date]"

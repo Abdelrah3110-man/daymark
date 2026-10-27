@@ -124,3 +124,4 @@ export function isAvatarUnlocked(avatarId: string, currentTotalXP: number): bool
   const avatar = getAvatarById(avatarId);
   return (currentTotalXP || 0) >= avatar.requiredXP;
 }
+

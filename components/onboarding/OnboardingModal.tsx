@@ -507,3 +507,4 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
 });
+
