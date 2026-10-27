@@ -80,42 +80,17 @@ export const FloatingBottomTabBar: React.FC<CustomTabBarProps> = ({
           const label = getTabLabel(route.name);
 
           const onPress = () => {
-            let defaultPrevented = false;
-
-            if (navigation && typeof navigation.emit === 'function') {
-              try {
-                const event = navigation.emit({
-                  type: 'tabPress',
-                  target: route.key,
-                  canPreventDefault: true,
-                });
-                defaultPrevented = !!event?.defaultPrevented;
-              } catch {
-                defaultPrevented = false;
-              }
-            }
-
-            if (!isFocused && !defaultPrevented) {
+            if (!isFocused) {
               if (navigation && typeof navigation.navigate === 'function') {
-                navigation.navigate(route.name, route.params);
-              } else {
-                const targetPath = route.name === 'index' ? '/(tabs)' : `/(tabs)/${route.name}`;
-                router.navigate(targetPath as any);
+                try {
+                  navigation.navigate(route.name, route.params);
+                  return;
+                } catch {
+                  // Fallback to Expo Router
+                }
               }
-            }
-          };
-
-          const onLongPress = () => {
-            if (navigation && typeof navigation.emit === 'function') {
-              try {
-                navigation.emit({
-                  type: 'tabLongPress',
-                  target: route.key,
-                  canPreventDefault: false,
-                });
-              } catch {
-                // Ignore safe fallback
-              }
+              const targetPath = route.name === 'index' ? '/(tabs)' : `/(tabs)/${route.name}`;
+              router.navigate(targetPath as any);
             }
           };
 
@@ -126,7 +101,6 @@ export const FloatingBottomTabBar: React.FC<CustomTabBarProps> = ({
               accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={options.tabBarAccessibilityLabel || label}
               onPress={onPress}
-              onLongPress={onLongPress}
               style={styles.tabButton}
               activeOpacity={0.8}
             >
