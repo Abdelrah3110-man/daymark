@@ -3,13 +3,14 @@ import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { THEME } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 
 export interface CustomTabBarProps {
-  state: {
+  state?: {
     index: number;
     routes: Array<{ key: string; name: string; params?: any }>;
   };
-  descriptors: {
+  descriptors?: {
     [key: string]: {
       options: {
         tabBarAccessibilityLabel?: string;
@@ -17,9 +18,9 @@ export interface CustomTabBarProps {
       };
     };
   };
-  navigation: {
-    emit: (event: { type: string; target: string; canPreventDefault: boolean }) => { defaultPrevented: boolean };
-    navigate: (name: string) => void;
+  navigation?: {
+    emit?: (event: { type: string; target: string; canPreventDefault: boolean }) => { defaultPrevented: boolean };
+    navigate?: (name: string, params?: any) => void;
   };
 }
 
@@ -29,6 +30,10 @@ export const FloatingBottomTabBar: React.FC<CustomTabBarProps> = ({
   navigation,
 }) => {
   const insets = useSafeAreaInsets();
+
+  if (!state || !state.routes || state.routes.length === 0) {
+    return null;
+  }
 
   const getTabIcon = (routeName: string, isFocused: boolean): keyof typeof Ionicons.glyphMap => {
     switch (routeName) {
@@ -68,21 +73,50 @@ export const FloatingBottomTabBar: React.FC<CustomTabBarProps> = ({
     <View style={[styles.outerContainer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       <View style={styles.pillContainer}>
         {state.routes.map((route, index) => {
-          const descriptor = descriptors[route.key];
-          const options = descriptor ? descriptor.options : {};
+          const descriptor = descriptors ? descriptors[route.key] : undefined;
+          const options = descriptor?.options || {};
           const isFocused = state.index === index;
           const iconName = getTabIcon(route.name, isFocused);
           const label = getTabLabel(route.name);
 
           const onPress = () => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
+            let defaultPrevented = false;
 
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
+            if (navigation && typeof navigation.emit === 'function') {
+              try {
+                const event = navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+                defaultPrevented = !!event?.defaultPrevented;
+              } catch {
+                // If emit fails gracefully proceed to navigation
+                defaultPrevented = false;
+              }
+            }
+
+            if (!isFocused && !defaultPrevented) {
+              if (navigation && typeof navigation.navigate === 'function') {
+                navigation.navigate(route.name, route.params);
+              } else {
+                const targetPath = route.name === 'index' ? '/(tabs)' : `/(tabs)/${route.name}`;
+                router.navigate(targetPath as any);
+              }
+            }
+          };
+
+          const onLongPress = () => {
+            if (navigation && typeof navigation.emit === 'function') {
+              try {
+                navigation.emit({
+                  type: 'tabLongPress',
+                  target: route.key,
+                  canPreventDefault: false,
+                });
+              } catch {
+                // Ignore safe fallback
+              }
             }
           };
 
@@ -93,6 +127,7 @@ export const FloatingBottomTabBar: React.FC<CustomTabBarProps> = ({
               accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={options.tabBarAccessibilityLabel || label}
               onPress={onPress}
+              onLongPress={onLongPress}
               style={[styles.tabButton, isFocused && styles.tabButtonActive]}
               activeOpacity={0.7}
             >
