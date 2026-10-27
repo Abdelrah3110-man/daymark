@@ -147,12 +147,17 @@ export default function PlannerScreen() {
       </ScrollView>
 
       {/* Task Editor Modal */}
-      <TaskEditor
-        visible={editorVisible}
-        onClose={() => setEditorVisible(false)}
-        taskToEdit={selectedTask}
-        defaultDate={targetDateForNewTask}
-      />
+      {editorVisible && (
+        <TaskEditor
+          visible={editorVisible}
+          onClose={() => {
+            setEditorVisible(false);
+            setSelectedTask(null);
+          }}
+          taskToEdit={selectedTask}
+          defaultDate={targetDateForNewTask}
+        />
+      )}
     </SafeAreaView>
   );
 }

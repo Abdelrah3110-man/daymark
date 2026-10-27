@@ -134,11 +134,16 @@ export default function NotesScreen() {
       </ScrollView>
 
       {/* Note Editor Modal */}
-      <NoteEditor
-        visible={editorVisible}
-        onClose={() => setEditorVisible(false)}
-        noteToEdit={noteToEdit}
-      />
+      {editorVisible && (
+        <NoteEditor
+          visible={editorVisible}
+          onClose={() => {
+            setEditorVisible(false);
+            setNoteToEdit(null);
+          }}
+          noteToEdit={noteToEdit}
+        />
+      )}
     </SafeAreaView>
   );
 }

@@ -324,12 +324,17 @@ export default function DailyPreviewScreen() {
       />
 
       {/* Task Editor Modal */}
-      <TaskEditor
-        visible={editorVisible}
-        onClose={() => setEditorVisible(false)}
-        taskToEdit={selectedTask}
-        defaultDate={dateKey}
-      />
+      {editorVisible && (
+        <TaskEditor
+          visible={editorVisible}
+          onClose={() => {
+            setEditorVisible(false);
+            setSelectedTask(null);
+          }}
+          taskToEdit={selectedTask}
+          defaultDate={dateKey}
+        />
+      )}
     </SafeAreaView>
   );
 }

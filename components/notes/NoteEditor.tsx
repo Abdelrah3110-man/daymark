@@ -30,15 +30,15 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ visible, onClose, noteTo
   const deleteNote = useNotesStore((s) => s.deleteNote);
   const allTasks = useTaskStore((s) => s.tasks);
   const allGoals = useGoalStore((s) => s.goals);
-  const tasks = allTasks.filter((t) => t.status !== 'cancelled');
-  const goals = allGoals.filter((g) => g.status === 'active');
+  const tasks = React.useMemo(() => allTasks.filter((t) => t.status !== 'cancelled'), [allTasks]);
+  const goals = React.useMemo(() => allGoals.filter((g) => g.status === 'active'), [allGoals]);
 
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [tagsInput, setTagsInput] = useState('');
-  const [linkedTaskId, setLinkedTaskId] = useState<string | undefined>(undefined);
-  const [linkedGoalId, setLinkedGoalId] = useState<string | undefined>(undefined);
-  const [isPinned, setIsPinned] = useState(false);
+  const [title, setTitle] = useState(noteToEdit?.title || '');
+  const [content, setContent] = useState(noteToEdit?.content || '');
+  const [tagsInput, setTagsInput] = useState(noteToEdit ? noteToEdit.tags.join(', ') : '');
+  const [linkedTaskId, setLinkedTaskId] = useState<string | undefined>(noteToEdit?.linkedTaskId);
+  const [linkedGoalId, setLinkedGoalId] = useState<string | undefined>(noteToEdit?.linkedGoalId);
+  const [isPinned, setIsPinned] = useState(noteToEdit?.isPinned || false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
@@ -49,15 +49,8 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ visible, onClose, noteTo
       setLinkedTaskId(noteToEdit.linkedTaskId);
       setLinkedGoalId(noteToEdit.linkedGoalId);
       setIsPinned(noteToEdit.isPinned);
-    } else {
-      setTitle('');
-      setContent('');
-      setTagsInput('');
-      setLinkedTaskId(undefined);
-      setLinkedGoalId(undefined);
-      setIsPinned(false);
     }
-  }, [noteToEdit, visible]);
+  }, [noteToEdit]);
 
   const handleSave = () => {
     const tags = tagsInput

@@ -19,7 +19,7 @@ export const PlanConflictDialog: React.FC<PlanConflictDialogProps> = ({
   onKeepDaily,
   onDismiss,
 }) => {
-  if (!conflict) return null;
+  if (!visible || !conflict) return null;
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onDismiss}>

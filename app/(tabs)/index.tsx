@@ -110,11 +110,13 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Task Editor Modal */}
-      <TaskEditor
-        visible={taskEditorVisible}
-        onClose={() => setTaskEditorVisible(false)}
-        defaultDate={todayKey}
-      />
+      {taskEditorVisible && (
+        <TaskEditor
+          visible={taskEditorVisible}
+          onClose={() => setTaskEditorVisible(false)}
+          defaultDate={todayKey}
+        />
+      )}
     </SafeAreaView>
   );
 }

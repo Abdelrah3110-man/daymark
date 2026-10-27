@@ -24,6 +24,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onConfirm,
   onCancel,
 }) => {
+  if (!visible) return null;
+
   return (
     <Modal
       visible={visible}

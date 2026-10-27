@@ -27,10 +27,10 @@ export const HabitEditor: React.FC<HabitEditorProps> = ({ visible, onClose, habi
   const updateHabit = useGoalStore((s) => s.updateHabit);
   const deleteHabit = useGoalStore((s) => s.deleteHabit);
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [frequency, setFrequency] = useState<HabitFrequency>('daily');
-  const [targetDaysPerWeek, setTargetDaysPerWeek] = useState(7);
+  const [title, setTitle] = useState(habitToEdit?.title || '');
+  const [description, setDescription] = useState(habitToEdit?.description || '');
+  const [frequency, setFrequency] = useState<HabitFrequency>(habitToEdit?.frequency || 'daily');
+  const [targetDaysPerWeek, setTargetDaysPerWeek] = useState(habitToEdit?.targetDaysPerWeek || 7);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -40,14 +40,8 @@ export const HabitEditor: React.FC<HabitEditorProps> = ({ visible, onClose, habi
       setDescription(habitToEdit.description || '');
       setFrequency(habitToEdit.frequency);
       setTargetDaysPerWeek(habitToEdit.targetDaysPerWeek || 7);
-    } else {
-      setTitle('');
-      setDescription('');
-      setFrequency('daily');
-      setTargetDaysPerWeek(7);
     }
-    setErrorMsg('');
-  }, [habitToEdit, visible]);
+  }, [habitToEdit]);
 
   const handleFrequencySelect = (freq: HabitFrequency) => {
     setFrequency(freq);

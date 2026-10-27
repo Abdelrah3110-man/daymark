@@ -29,11 +29,13 @@ export const GoalEditor: React.FC<GoalEditorProps> = ({ visible, onClose, goalTo
   const updateGoal = useGoalStore((s) => s.updateGoal);
   const deleteGoal = useGoalStore((s) => s.deleteGoal);
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('Career');
-  const [targetDate, setTargetDate] = useState('');
-  const [milestonesInput, setMilestonesInput] = useState('');
+  const [title, setTitle] = useState(goalToEdit?.title || '');
+  const [description, setDescription] = useState(goalToEdit?.description || '');
+  const [category, setCategory] = useState(goalToEdit?.category || 'Career');
+  const [targetDate, setTargetDate] = useState(goalToEdit?.targetDate || '');
+  const [milestonesInput, setMilestonesInput] = useState(
+    goalToEdit ? goalToEdit.milestones.map((m) => m.title).join('\n') : ''
+  );
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -44,15 +46,8 @@ export const GoalEditor: React.FC<GoalEditorProps> = ({ visible, onClose, goalTo
       setCategory(goalToEdit.category || 'Career');
       setTargetDate(goalToEdit.targetDate || '');
       setMilestonesInput(goalToEdit.milestones.map((m) => m.title).join('\n'));
-    } else {
-      setTitle('');
-      setDescription('');
-      setCategory('Career');
-      setTargetDate('');
-      setMilestonesInput('');
     }
-    setErrorMsg('');
-  }, [goalToEdit, visible]);
+  }, [goalToEdit]);
 
   const handleSave = () => {
     if (!title.trim()) {

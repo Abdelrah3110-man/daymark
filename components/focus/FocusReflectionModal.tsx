@@ -28,6 +28,8 @@ export const FocusReflectionModal: React.FC<FocusReflectionModalProps> = ({
   const [reflection, setReflection] = useState('');
   const [markComplete, setMarkComplete] = useState(false);
 
+  if (!visible) return null;
+
   const handleSubmit = () => {
     finishSession(reflection, markComplete);
     setReflection('');

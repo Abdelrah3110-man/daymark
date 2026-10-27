@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,14 +9,12 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import { THEME } from '@/constants/theme';
 import { Task, TaskDifficulty, TaskPriority, TaskCategory } from '@/types/app';
 import { Ionicons } from '@expo/vector-icons';
 import { useTaskStore } from '@/store/task-store';
 import { useGoalStore } from '@/store/goal-store';
-import { usePlanningStore } from '@/store/planning-store';
 import { getTodayKey } from '@/utils/dates';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 
@@ -39,20 +37,21 @@ export const TaskEditor: React.FC<TaskEditorProps> = ({
   const createTask = useTaskStore((s) => s.createTask);
   const updateTask = useTaskStore((s) => s.updateTask);
   const deleteTask = useTaskStore((s) => s.deleteTask);
-  const bumpRevision = usePlanningStore((s) => s.bumpWeeklyPlanRevision);
   const allGoals = useGoalStore((s) => s.goals);
-  const goals = allGoals.filter((g) => g.status === 'active');
+  const goals = useMemo(() => allGoals.filter((g) => g.status === 'active'), [allGoals]);
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [scheduledDate, setScheduledDate] = useState(defaultDate || getTodayKey());
-  const [scheduledTime, setScheduledTime] = useState('');
-  const [estimatedDuration, setEstimatedDuration] = useState(30);
-  const [difficulty, setDifficulty] = useState<TaskDifficulty>('medium');
-  const [priority, setPriority] = useState<TaskPriority>('medium');
-  const [category, setCategory] = useState<TaskCategory>('Work');
-  const [isDailyPriority, setIsDailyPriority] = useState(false);
-  const [goalId, setGoalId] = useState<string | undefined>(undefined);
+  const [title, setTitle] = useState(taskToEdit?.title || '');
+  const [description, setDescription] = useState(taskToEdit?.description || '');
+  const [scheduledDate, setScheduledDate] = useState(
+    taskToEdit?.scheduledDate || defaultDate || getTodayKey()
+  );
+  const [scheduledTime, setScheduledTime] = useState(taskToEdit?.scheduledTime || '');
+  const [estimatedDuration, setEstimatedDuration] = useState(taskToEdit?.estimatedDuration || 30);
+  const [difficulty, setDifficulty] = useState<TaskDifficulty>(taskToEdit?.difficulty || 'medium');
+  const [priority, setPriority] = useState<TaskPriority>(taskToEdit?.priority || 'medium');
+  const [category, setCategory] = useState<TaskCategory>(taskToEdit?.category || 'Work');
+  const [isDailyPriority, setIsDailyPriority] = useState(taskToEdit?.isDailyPriority || false);
+  const [goalId, setGoalId] = useState<string | undefined>(taskToEdit?.goalId);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -68,20 +67,8 @@ export const TaskEditor: React.FC<TaskEditorProps> = ({
       setCategory(taskToEdit.category);
       setIsDailyPriority(taskToEdit.isDailyPriority);
       setGoalId(taskToEdit.goalId);
-    } else {
-      setTitle('');
-      setDescription('');
-      setScheduledDate(defaultDate || getTodayKey());
-      setScheduledTime('');
-      setEstimatedDuration(30);
-      setDifficulty('medium');
-      setPriority('medium');
-      setCategory('Work');
-      setIsDailyPriority(false);
-      setGoalId(undefined);
     }
-    setErrorMsg('');
-  }, [taskToEdit, defaultDate, visible]);
+  }, [taskToEdit]);
 
   const handleSave = () => {
     if (!title.trim()) {
@@ -556,4 +543,3 @@ const styles = StyleSheet.create({
     color: THEME.colors.danger,
   },
 });
-

@@ -131,18 +131,28 @@ export default function GoalsScreen() {
       </ScrollView>
 
       {/* Goal Editor Modal */}
-      <GoalEditor
-        visible={goalEditorVisible}
-        onClose={() => setGoalEditorVisible(false)}
-        goalToEdit={goalToEdit}
-      />
+      {goalEditorVisible && (
+        <GoalEditor
+          visible={goalEditorVisible}
+          onClose={() => {
+            setGoalEditorVisible(false);
+            setGoalToEdit(null);
+          }}
+          goalToEdit={goalToEdit}
+        />
+      )}
 
       {/* Habit Editor Modal */}
-      <HabitEditor
-        visible={habitEditorVisible}
-        onClose={() => setHabitEditorVisible(false)}
-        habitToEdit={habitToEdit}
-      />
+      {habitEditorVisible && (
+        <HabitEditor
+          visible={habitEditorVisible}
+          onClose={() => {
+            setHabitEditorVisible(false);
+            setHabitToEdit(null);
+          }}
+          habitToEdit={habitToEdit}
+        />
+      )}
     </SafeAreaView>
   );
 }
